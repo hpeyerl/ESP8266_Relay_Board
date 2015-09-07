@@ -8,22 +8,23 @@
 #
 # Output directors to store intermediate compiled files
 # relative to the project directory
+#
+#   Local defines to override toolchain and sdk paths...
+-include local.mk
+#
+
 BUILD_BASE	= build
 FW_BASE		= firmware
 
 # Base directory for the compiler
-#XTENSA_TOOLS_ROOT ?= /opt/Espressif/crosstool-NG/builds/xtensa-lx106-elf/bin
-XTENSA_TOOLS_ROOT ?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/xtensa-lx106-elf/bin/
+XTENSA_TOOLS_ROOT ?= /opt/Espressif/crosstool-NG/builds/xtensa-lx106-elf/bin
 
 #Extra Tensilica includes from the ESS VM
-#SDK_EXTRA_INCLUDES ?= /opt/Espressif/ESP8266_SDK/include
-SDK_EXTRA_INCLUDES ?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/esp_iot_sdk_v1.2.0/sdk/include /home/hpeyerl/trunk/toolchains/esp-open-sdk/esp_iot_sdk_v1.2.0/examples/driver_lib/include 
-#SDK_EXTRA_LIBS ?= /opt/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/
-SDK_EXTRA_LIBS ?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/crosstool-NG/.build/xtensa-lx106-elf/buildtools/bin/xtensa-lx106-elf-gcc
+SDK_EXTRA_INCLUDES ?= /opt/Espressif/ESP8266_SDK/include
+SDK_EXTRA_LIBS ?= /opt/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/
 
 # base directory of the ESP8266 SDK package, absolute
-#SDK_BASE	?= /opt/Espressif/ESP8266_SDK
-SDK_BASE	?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/esp_iot_sdk_v1.2.0
+SDK_BASE	?= /opt/Espressif/ESP8266_SDK
 
 #Esptool.py path and port
 ESPTOOL		?= esptool
