@@ -12,14 +12,18 @@ BUILD_BASE	= build
 FW_BASE		= firmware
 
 # Base directory for the compiler
-XTENSA_TOOLS_ROOT ?= /opt/Espressif/crosstool-NG/builds/xtensa-lx106-elf/bin
+#XTENSA_TOOLS_ROOT ?= /opt/Espressif/crosstool-NG/builds/xtensa-lx106-elf/bin
+XTENSA_TOOLS_ROOT ?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/xtensa-lx106-elf/bin/
 
 #Extra Tensilica includes from the ESS VM
-SDK_EXTRA_INCLUDES ?= /opt/Espressif/ESP8266_SDK/include
-SDK_EXTRA_LIBS ?= /opt/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/
+#SDK_EXTRA_INCLUDES ?= /opt/Espressif/ESP8266_SDK/include
+SDK_EXTRA_INCLUDES ?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/esp_iot_sdk_v1.2.0/sdk/include /home/hpeyerl/trunk/toolchains/esp-open-sdk/esp_iot_sdk_v1.2.0/examples/driver_lib/include 
+#SDK_EXTRA_LIBS ?= /opt/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/
+SDK_EXTRA_LIBS ?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/crosstool-NG/.build/xtensa-lx106-elf/buildtools/bin/xtensa-lx106-elf-gcc
 
 # base directory of the ESP8266 SDK package, absolute
-SDK_BASE	?= /opt/Espressif/ESP8266_SDK
+#SDK_BASE	?= /opt/Espressif/ESP8266_SDK
+SDK_BASE	?= /home/hpeyerl/trunk/toolchains/esp-open-sdk/esp_iot_sdk_v1.2.0
 
 #Esptool.py path and port
 ESPTOOL		?= esptool
@@ -35,6 +39,7 @@ TARGET		= httpd
 #MODULES		= driver user lwip/api lwip/app lwip/core lwip/core/ipv4 lwip/netif
 MODULES		= driver user 
 EXTRA_INCDIR	= include \
+		  user/include \
 		. \
 		lib/heatshrink/ \
 		$(SDK_EXTRA_INCLUDES)
@@ -48,7 +53,7 @@ LIBS		= c hal gcc phy pp net80211 wpa main lwip
 GZIP_COMPRESSION = "yes"
 
 # compiler flags using during compilation of source files
-CFLAGS		= -Os -ggdb -std=c99 -Werror -Wpointer-arith -Wundef -Wall -Wl,-EL -fno-inline-functions \
+CFLAGS		= -Os -ggdb -std=c99 -Wpointer-arith -Wundef -Wall -Wl,-EL -fno-inline-functions \
 		-nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH \
 		-Wno-address -Wno-unused-function -Wno-unused-but-set-variable
 

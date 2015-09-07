@@ -54,6 +54,7 @@ i2c_sck(uint8 state)
  * I2C init function
  * This sets up the GPIO io
  */
+
 void ICACHE_FLASH_ATTR
 i2c_init(void)
 {
