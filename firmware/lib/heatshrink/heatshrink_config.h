@@ -6,8 +6,13 @@
 
 #if HEATSHRINK_DYNAMIC_ALLOC
     /* Optional replacement of malloc/free */
+#if defined(ICACHE_FLASH)	// sleezy way to determine whether compile for target or host
     #define HEATSHRINK_MALLOC(SZ) os_malloc(SZ)
     #define HEATSHRINK_FREE(P, SZ) os_free(P)
+#else
+    #define HEATSHRINK_MALLOC(SZ) malloc(SZ)
+    #define HEATSHRINK_FREE(P, SZ) free(P)
+#endif
 #else
     /* Required parameters for static configuration */
     #define HEATSHRINK_STATIC_INPUT_BUFFER_SIZE 32
