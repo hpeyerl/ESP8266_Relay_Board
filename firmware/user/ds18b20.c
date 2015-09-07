@@ -315,6 +315,7 @@ void ICACHE_FLASH_ATTR ds_init(uint32_t polltime)
 	//set gpio2 as gpio pin
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
 	  
+#if 0	// Removed from SDK 1.2.0. Assume external pulls.
 	//disable pulldown
 	PIN_PULLDWN_DIS(PERIPHS_IO_MUX_GPIO2_U);
 	  
@@ -323,6 +324,7 @@ void ICACHE_FLASH_ATTR ds_init(uint32_t polltime)
 	  
 	// Configure the GPIO with internal pull-up
 	// PIN_PULLUP_EN( gpio );
+#endif
 
 	GPIO_DIS_OUTPUT( DS18B20_PIN );
 

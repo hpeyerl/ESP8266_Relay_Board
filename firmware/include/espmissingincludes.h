@@ -45,9 +45,10 @@ void vPortFree(void *ptr);
 void *vPortMalloc(size_t xWantedSize);
 uint8 wifi_get_opmode(void);
 uint32 system_get_time();
-#if 0
+#if 0 // sdk 1.2.0 has this
 int os_random();
 #endif
+
 int rand(void);
 void ets_bzero(void *s, size_t n);
 void ets_delay_us(long us);

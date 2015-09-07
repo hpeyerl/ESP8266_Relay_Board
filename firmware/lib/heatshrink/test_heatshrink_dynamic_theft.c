@@ -35,7 +35,7 @@ static void *rbuf_alloc_cb(struct theft *t, theft_hash seed, void *env) {
     //printf("seed is 0x%016llx\n", seed);
 
     size_t sz = (size_t)(seed % te->limit) + 1;
-    rbuf *r = malloc(sizeof(rbuf) + sz);
+    rbuf *r = os_malloc(sizeof(rbuf) + sz);
     if (r == NULL) { return THEFT_ERROR; }
     r->size = sz;
 
@@ -51,7 +51,7 @@ static void *rbuf_alloc_cb(struct theft *t, theft_hash seed, void *env) {
 }
 
 static void rbuf_free_cb(void *instance, void *env) {
-    free(instance);
+    os_free(instance);
     (void)env;
 }
 
@@ -64,7 +64,7 @@ static uint64_t rbuf_hash_cb(void *instance, void *env) {
 /* Make a copy of a buffer, keeping NEW_SZ bytes starting at OFFSET. */
 static void *copy_rbuf_subset(rbuf *cur, size_t new_sz, size_t byte_offset) {
     if (new_sz == 0) { return THEFT_DEAD_END; }
-    rbuf *nr = malloc(sizeof(rbuf) + new_sz);
+    rbuf *nr = os_malloc(sizeof(rbuf) + new_sz);
     if (nr == NULL) { return THEFT_ERROR; }
     nr->size = new_sz;
     memcpy(nr->buf, &cur->buf[byte_offset], new_sz);

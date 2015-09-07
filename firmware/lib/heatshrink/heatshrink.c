@@ -99,7 +99,7 @@ static void report(config *cfg);
 /* Open an IO handle. Returns NULL on error. */
 static io_handle *handle_open(char *fname, IO_mode m, size_t buf_sz) {
     io_handle *io = NULL;
-    io = malloc(sizeof(*io) + buf_sz);
+    io = os_malloc(sizeof(*io) + buf_sz);
     if (io == NULL) { return NULL; }
     memset(io, 0, sizeof(*io) + buf_sz);
     io->fd = -1;
@@ -121,7 +121,7 @@ static io_handle *handle_open(char *fname, IO_mode m, size_t buf_sz) {
     }
 
     if (io->fd == -1) {         /* failed to open */
-        free(io);
+        os_free(io);
         err(1, "open");
         return NULL;
     }
@@ -218,8 +218,8 @@ static void close_and_report(config *cfg) {
     handle_close(cfg->in);
     handle_close(cfg->out);
     if (cfg->verbose) { report(cfg); }
-    free(cfg->in);
-    free(cfg->out);
+    os_free(cfg->in);
+    os_free(cfg->out);
 }
 
 static int encoder_sink_read(config *cfg, heatshrink_encoder *hse,

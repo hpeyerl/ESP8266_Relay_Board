@@ -94,7 +94,7 @@ int handleFile(int f, char *name, int compression, int level) {
 		csize=size;
 		cdat=fdat;
 	} else if (compression==COMPRESS_HEATSHRINK) {
-		cdat=malloc(size*2);
+		cdat=os_malloc(size*2);
 		csize=compressHeatshrink(fdat, size, cdat, size*2, level);
 	} else {
 		fprintf(stderr, "Unknown compression - %d\n", compression);

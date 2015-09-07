@@ -37,8 +37,8 @@ static int compress_and_expand_and_check(uint8_t *input, uint32_t input_size, in
     heatshrink_decoder_reset(&hsd);
     size_t comp_sz = input_size + (input_size/2) + 4;
     size_t decomp_sz = input_size + (input_size/2) + 4;
-    uint8_t *comp = malloc(comp_sz);
-    uint8_t *decomp = malloc(decomp_sz);
+    uint8_t *comp = os_malloc(comp_sz);
+    uint8_t *decomp = os_malloc(decomp_sz);
     if (comp == NULL) FAILm("malloc fail");
     if (decomp == NULL) FAILm("malloc fail");
     memset(comp, 0, comp_sz);
@@ -128,8 +128,8 @@ static int compress_and_expand_and_check(uint8_t *input, uint32_t input_size, in
         }
         ASSERT_EQ(input[i], decomp[i]);
     }
-    free(comp);
-    free(decomp);
+    os_free(comp);
+    os_free(decomp);
     PASS();
 }
 

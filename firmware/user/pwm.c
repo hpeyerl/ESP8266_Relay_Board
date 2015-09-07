@@ -302,7 +302,7 @@ pwm_init(uint16 freq, uint8 *duty)
                   | TM_EDGE_INT);
     RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
 
-    PIN_FUNC_SELECT(PWM_0_OUT_IO_MUX, PWM_0_OUT_IO_FUNC);
+    PIN_FUNC_SELECT((PWM_0_OUT_IO_MUX), (PWM_0_OUT_IO_FUNC));
 
     for (i = 0; i < PWM_CHANNEL; i++) {
         pwm_gpio |= (1 << pwm_out_io_num[i]);
