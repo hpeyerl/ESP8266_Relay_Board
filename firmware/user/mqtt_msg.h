@@ -1,3 +1,4 @@
+#ifdef CONFIG_MQTT
 /* 
  * File:   mqtt_msg.h
  * Author: Minh Tuan
@@ -128,3 +129,4 @@ mqtt_message_t* ICACHE_FLASH_ATTR mqtt_msg_disconnect(mqtt_connection_t* connect
 
 #endif	/* MQTT_MSG_H */
 
+#endif // CONFIG_MQTT

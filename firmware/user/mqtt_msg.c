@@ -1,3 +1,4 @@
+#ifdef CONFIG_MQTT
 /*
 * Copyright (c) 2014, Stephen Robinson
 * All rights reserved.
@@ -450,3 +451,4 @@ mqtt_message_t* ICACHE_FLASH_ATTR mqtt_msg_disconnect(mqtt_connection_t* connect
   init_message(connection);
   return fini_message(connection, MQTT_MSG_TYPE_DISCONNECT, 0, 0, 0);
 }
+#endif // CONFIG_MQTT
