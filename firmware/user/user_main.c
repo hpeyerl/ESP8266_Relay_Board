@@ -36,7 +36,9 @@
 
 //#include "oled.h"
 
+#ifdef CONFIG_MQTT
 MQTT_Client mqttClient;
+#endif
 
 //Function that tells the authentication system what users/passwords live on the system.
 //This is disabled in the default build; if you want to try it, enable the authBasic line in
@@ -79,14 +81,20 @@ HttpdBuiltInUrl builtInUrls[]={
 	{"/control/ui.tpl", cgiEspFsTemplate, tplUI},
 	{"/control/relay.tpl", cgiEspFsTemplate, tplGPIO},
 	{"/control/relay.cgi", cgiGPIO, NULL},
+#ifdef CONFIG_DHT22
     {"/control/dht22.tpl", cgiEspFsTemplate, tplDHT},
     {"/control/dht22.cgi", cgiDHT22, NULL}, 
+#endif
+#ifdef CONFIG_DS18B20
     {"/control/ds18b20.tpl", cgiEspFsTemplate, tplDS18b20},
     {"/control/ds18b20.cgi", cgiDS18b20, NULL}, 
+#endif
     {"/control/state.cgi", cgiState, NULL}, 
     {"/control/reset.cgi", cgiReset, NULL}, 
+#ifdef CONFIG_THERMOSTAT
     {"/control/thermostat.tpl", cgiEspFsTemplate, tplThermostat},
     {"/control/thermostat.cgi", cgiThermostat, NULL}, 
+#endif
 #ifdef CGIPWM_H
 	{"/control/pwm.cgi", cgiPWM, NULL},
 #endif
@@ -97,8 +105,10 @@ HttpdBuiltInUrl builtInUrls[]={
 	{"/config/wifi/connect.cgi", cgiWiFiConnect, NULL},
 	{"/config/wifi/setmode.cgi", cgiWiFiSetMode, NULL},
 	{"/config/wifi/connstatus.cgi", cgiWiFiConnStatus, NULL},
+#ifdef CONFIG_MQTT
 	{"/config/mqtt.tpl", cgiEspFsTemplate, tplMQTT},
 	{"/config/mqtt.cgi", cgiMQTT, NULL},
+#endif // CONFIG_MQTT
 	{"/config/httpd.tpl", cgiEspFsTemplate, tplHTTPD},
 	{"/config/httpd.cgi", cgiHTTPD, NULL},
 	{"/config/broadcastd.tpl", cgiEspFsTemplate, tplBroadcastD},
@@ -115,6 +125,7 @@ HttpdBuiltInUrl builtInUrls[]={
 	{NULL, NULL, NULL}
 };
 
+#ifdef CONFIG_GET_EXTERNAL_IP
 
 void ICACHE_FLASH_ATTR http_callback_IP(char * response, int http_status, char * full_response)
 {
@@ -126,6 +137,7 @@ void ICACHE_FLASH_ATTR http_callback_IP(char * response, int http_status, char *
 	}
 }
 
+
 void ICACHE_FLASH_ATTR wifiConnectCb(uint8_t status)
 {
 	if(status == STATION_GOT_IP){
@@ -133,14 +145,19 @@ void ICACHE_FLASH_ATTR wifiConnectCb(uint8_t status)
 		os_printf("Trying to find external IP address\n");
 		http_get("http://wtfismyip.com/text", http_callback_IP);
 
+#ifdef CONFIG_MQTT
 		if(sysCfg.mqtt_enable==1) {
 			MQTT_Connect(&mqttClient);
 		} else {
 			MQTT_Disconnect(&mqttClient);
 		}
+#endif // CONFIG_MQTT
 	}	
 }
 
+#endif // CONFIG_GET_EXTERNAL_IP
+
+#ifdef CONFIG_MQTT
 void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 {
 	MQTT_Client* client = (MQTT_Client*)args;
@@ -205,23 +222,28 @@ void ICACHE_FLASH_ATTR mqttPublishedCb(uint32_t *args)
     os_printf("MQTT: Published\r\n");
 }
 
+#endif  // CONFIG_MQTT
 
 //Main routine
 void ICACHE_FLASH_ATTR user_init(void) {
 
 	stdoutInit();	
 	os_delay_us(100000);
+
 	CFG_Load();
 	ioInit();
 	
+#ifdef NOTYET
 	WIFI_Connect(wifiConnectCb);
-	
+#endif
+
 	httpdInit(builtInUrls, sysCfg.httpd_port);
-	
+
 	if(sysCfg.ntp_enable==1) {
 		sntp_init(sysCfg.ntp_tz);	//timezone
 	}
 	
+#ifdef CONFIG_MQTT
 	if(sysCfg.mqtt_enable==1) {
 		MQTT_InitConnection(&mqttClient, (uint8_t *)sysCfg.mqtt_host, sysCfg.mqtt_port, sysCfg.mqtt_use_ssl );
 		MQTT_InitClient(&mqttClient, (uint8_t *)sysCfg.mqtt_devid, (uint8_t *)sysCfg.mqtt_user, (uint8_t *)sysCfg.mqtt_pass, sysCfg.mqtt_keepalive,1);
@@ -231,18 +253,25 @@ void ICACHE_FLASH_ATTR user_init(void) {
 		MQTT_OnData(&mqttClient, mqttDataCb);
 		
 	}
+#endif // CONFIG_MQTT
 	
+#ifdef CONFIG_DHT22
 	if(sysCfg.sensor_dht22_enable) 
 		DHTInit(SENSOR_DHT22, 30000);
+#endif // CONFIG_DHT22
 		
+#ifdef CONFIG_DS18B20
 	if(sysCfg.sensor_ds18b20_enable) 
 		ds_init(30000);
+#endif // CONFIG_DS18B20
 
 	broadcastd_init();
 
+#ifdef CONFIG_THERMOSTAT
 	thermostat_init(30000);
+#endif // CONFIG_THERMOSTAT
 
-/*
+#ifdef CONFIG_NETBIOS
 	//Netbios to set the name
 	struct softap_config wiconfig;
 	os_memset(netbios_name, ' ', sizeof(netbios_name)-1);
@@ -256,7 +285,7 @@ void ICACHE_FLASH_ATTR user_init(void) {
 	else os_sprintf(netbios_name, "ESP8266");
 	netbios_name[sizeof(netbios_name)-1]='\0';
 	netbios_init();
-*/
+#endif // CONFIG_NETBIOS
 		
 	os_printf("\nRelay Board Ready\n");	
 	os_printf("Free heap size:%d\n",system_get_free_heap_size());
