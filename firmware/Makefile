@@ -45,6 +45,15 @@ EXTRA_INCDIR	= include \
 		lib/heatshrink/ \
 		$(SDK_EXTRA_INCLUDES)
 
+CONFIG += -DCONFIG_MAX_RELAYS=2
+# CONFIG += CONFIG_MQTT
+# CONFIG += CONFIG_I2C
+# CONFIG += CONFIG_DHT22
+# CONFIG += CONFIG_DS18B20
+# CONFIG += CONFIG_MAX31855
+# CONFIG += CONFIG_SI7020
+# CONFIG += CONFIG_GET_EXTERNAL_IP
+
 # libraries used in this project, mainly provided by the SDK
 LIBS		= c hal gcc phy pp net80211 wpa main lwip
 
@@ -56,7 +65,7 @@ GZIP_COMPRESSION = "yes"
 # compiler flags using during compilation of source files
 CFLAGS		= -Os -ggdb -std=c99 -Wpointer-arith -Wundef -Wall -Wl,-EL -fno-inline-functions \
 		-nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH \
-		-Wno-address -Wno-unused-function -Wno-unused-but-set-variable
+		-Wno-address -Wno-unused-function -Wno-unused-but-set-variable $(CONFIG)
 
 # linker flags used to generate the main object file
 LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static -L$(SDK_EXTRA_LIBS)
