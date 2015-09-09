@@ -1,3 +1,4 @@
+#ifdef CONFIG_MQTT
 /* mqtt.c
 *  Protocol: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
 *
@@ -657,3 +658,4 @@ MQTT_OnPublished(MQTT_Client *mqttClient, MqttCallback publishedCb)
 {
 	mqttClient->publishedCb = publishedCb;
 }
+#endif
