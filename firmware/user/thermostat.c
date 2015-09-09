@@ -1,4 +1,4 @@
-
+#ifdef CONFIG_THERMOSTAT
 #include "espmissingincludes.h"
 #include "ets_sys.h"
 #include "os_type.h"
@@ -145,3 +145,4 @@ void ICACHE_FLASH_ATTR thermostat_init(uint32_t polltime)
 	os_timer_arm(&thermostatTimer, polltime, 1);
   
 }
+#endif // CONFIG_THERMOSTAT
