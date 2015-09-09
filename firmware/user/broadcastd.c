@@ -13,7 +13,6 @@
 #include "utils.h"
 #include "httpclient.h"
   
-MQTT_Client mqttClient;
 
 /*
  * ----------------------------------------------------------------------------
@@ -26,7 +25,10 @@ MQTT_Client mqttClient;
  * ----------------------------------------------------------------------------
  */
 
+#ifdef CONFIG_MQTT
+MQTT_Client mqttClient;
 static ETSTimer MQTTbroadcastTimer;
+#endif
 static ETSTimer broadcastTimer; 
  
 static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
@@ -40,24 +42,29 @@ static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 	//double expand as sysCfg.broadcastd_url cntains placeholders as well
 	os_sprintf(buf2,"http://%s:%d/%s",sysCfg.broadcastd_host,(int)sysCfg.broadcastd_port,sysCfg.broadcastd_url);
 	
+#ifdef CONFIG_DHT22
 	if(sysCfg.sensor_dht22_enable)  {
 		dht_temp_str(t2);
 		dht_humi_str(t3);
 		os_sprintf(buf,buf2,currGPIO12State,currGPIO13State,currGPIO15State,"N/A",t2,t3);
 	}
+#endif
 	
+#ifdef CONFIG_DS18B20
 	if(sysCfg.sensor_ds18b20_enable)  { // If DS18b20 daemon is enabled, then send up to 3 sensor's data instead
 		ds_str(t1,0);
 		if(numds>1) ds_str(t2,1); //reuse to save space
 		if(numds>2)  ds_str(t3,2); //reuse to save space
 		os_sprintf(buf,buf2,currGPIO12State,currGPIO13State,currGPIO15State,t1,t2,t3);
 	}
+#endif
 		
 	http_get(buf, http_callback_example);	
 	os_printf("Sent HTTP GET: %s\n\r",buf);
 }
  
 
+#ifdef CONFIG_MQTT
 static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 	if(sysCfg.mqtt_enable==1) {
 		//os_printf("Sending MQTT\n");
@@ -99,14 +106,17 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
     }
 }
 
+#endif // CONFIG_MQTT
 
 void ICACHE_FLASH_ATTR broadcastd_init(void){
 
+#ifdef CONFIG_MQTT
 	if(sysCfg.mqtt_enable==1) {
 		os_printf("Arming MQTT broadcast timer\n");
 		os_timer_setfn(&MQTTbroadcastTimer, MQTTbroadcastReading, NULL);
 		os_timer_arm(&MQTTbroadcastTimer, 60000, 1);
 	}
+#endif // CONFIG_MQTT
 	
 	if(sysCfg.broadcastd_enable==1) {
 		os_printf("Arming HTTP broadcast timer\n");  	
