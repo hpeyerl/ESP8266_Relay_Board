@@ -70,7 +70,7 @@ should be placed above the URLs they protect.
 */
 HttpdBuiltInUrl builtInUrls[]={
 	{"/", cgiRedirect, "/index.tpl"},
-	{"/index.tpl", cgiEspFsTemplate, tplCounter},
+	{"/index.tpl", cgiEspFsTemplate, tplDeviceStr},
 	{"/about.tpl", cgiEspFsTemplate, tplCounter},
 
 	//{"/flash.bin", cgiReadFlash, NULL},
@@ -113,6 +113,8 @@ HttpdBuiltInUrl builtInUrls[]={
 	{"/config/httpd.cgi", cgiHTTPD, NULL},
 	{"/config/broadcastd.tpl", cgiEspFsTemplate, tplBroadcastD},
 	{"/config/broadcastd.cgi", cgiBroadcastD, NULL},
+	{"/config/config.tpl", cgiEspFsTemplate, tplConfig},
+	{"/config/config.cgi", cgiConfig, NULL},
 	{"/config/ntp.tpl", cgiEspFsTemplate, tplNTP},
 	{"/config/ntp.cgi", cgiNTP, NULL},
 	{"/config/relay.tpl", cgiEspFsTemplate, tplRLYSettings},

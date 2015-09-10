@@ -5,7 +5,7 @@
 </head>
 <body>
 <div id="main">
-<h1>Main</h1>
+<h1>Main - Board ID: %board_id%</h1>
 <p>
 <ul>
 <li><a href="config/wifi/wifi.tpl">WiFi</a> settings.</li>

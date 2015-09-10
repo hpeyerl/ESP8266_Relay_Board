@@ -54,6 +54,20 @@ typedef struct {
 daySchedule weekSched[7]; // 7 days per week
 }  weekSchedule;
 
+/*
+ * Board ID is used in ioInit to configure I's and O's
+ */
+#define BOARD_ID_RELAY_BOARD		0
+#define BOARD_ID_PHROB_DUAL_RELAY	1
+#define BOARD_ID_PHROB_SINGLE_RELAY	2
+#define BOARD_ID_PHROB_THERMOCOUPLE	3
+#define BOARD_ID_PHROB_TEMP_HUM		4
+#define BOARD_ID_PHROB_HALL_EFFECT	5
+#define BOARD_ID_PHROB_WATER		6
+#define BOARD_ID_PHROB_TILT		7
+#define BOARD_ID_PHROB_SIGNAL_RELAY	8
+/*
+ */
 
 typedef struct{
 	
@@ -77,22 +91,7 @@ uint32_t httpd_auth;
 uint8_t httpd_user[16];
 uint8_t httpd_pass[16];
 
-/*
- * Board ID is used in ioInit to configure I's and O's
- */
-#define BOARD_ID_RELAY_BOARD		0
-#define BOARD_ID_PHROB_DUAL_RELAY	1
-#define BOARD_ID_PHROB_SINGLE_RELAY	2
-#define BOARD_ID_PHROB_THERMOCOUPLE	3
-#define BOARD_ID_PHROB_TEMP_HUM		4
-#define BOARD_ID_PHROB_HALL_EFFECT	5
-#define BOARD_ID_PHROB_WATER		6
-#define BOARD_ID_PHROB_TILT		7
-#define BOARD_ID_PHROB_SIGNAL_RELAY	8
 uint8_t board_id;
-/*
- */
-
 uint32_t broadcastd_enable;
 uint32_t broadcastd_port;
 uint8_t broadcastd_host[32];

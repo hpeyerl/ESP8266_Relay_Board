@@ -27,6 +27,32 @@ Some random cgi routines.
 #include "time_utils.h"
 #include "config.h"
 
+static const char *board_id_str[] = {
+	"Relay Board",
+	"Dual 16A Relay Phrob" ,
+	"Single 16A Relay Phrob" ,
+	"Thermocouple Phrob",
+	"Temperature Humidity Phrob" ,
+	"Current Sensor Phrob",
+	"Water Sensor Phrob",
+	"Tilt Sensor Phrob",
+	"Signal Relay Phrob" ,
+};
+
+int ICACHE_FLASH_ATTR tplDeviceStr(HttpdConnData *connData, char *token, void **arg) {
+	char buff[128];
+	if (token==NULL) return HTTPD_CGI_DONE;
+
+	if (os_strcmp(token, "board_id")==0) {
+		os_sprintf(buff, "%s", board_id_str[sysCfg.board_id]);
+	}
+
+	httpdSend(connData, buff, -1);
+	return HTTPD_CGI_DONE;
+}
+
+
+
 //Cgi that turns the Relays on or off according to the 'relayX' param in the GET data
 int ICACHE_FLASH_ATTR cgiGPIO(HttpdConnData *connData) {
 	int len;
@@ -804,8 +830,52 @@ void ICACHE_FLASH_ATTR tplSensorSettings(HttpdConnData *connData, char *token, v
 
 
 
+void ICACHE_FLASH_ATTR tplConfig(HttpdConnData *connData, char *token, void **arg) {
+	char buff[255];
+	if (token==NULL) return;
+
+	os_strcpy(buff, "Unknown");
+
+	if (os_strcmp(token, "board_id")==0) {
+			os_sprintf(buff,"%d", (int)sysCfg.board_id);
+	}
+
+	httpdSend(connData, buff, -1);
+}
+
+int ICACHE_FLASH_ATTR cgiConfig(HttpdConnData *connData) {
+	char buff[255];
+	int len;
+	
+	if (connData->conn==NULL) {
+		//Connection aborted. Clean up.
+		return HTTPD_CGI_DONE;
+	}
+
+	len=httpdFindArg(connData->getArgs, "js", buff, sizeof(buff));
+	if (len>0) {
+
+		httpdStartResponse(connData, 200);
+		httpdHeader(connData, "Content-Type", "text/javascript");
+		httpdEndHeaders(connData);
+
+		len=os_sprintf(buff, "var channel=%d;\n",(int)sysCfg.board_id );
+		httpdSend(connData, buff, -1);
+		return HTTPD_CGI_DONE;	
 
 
+	}
+
+	len=httpdFindArg(connData->post->buff, "board_id", buff, sizeof(buff));
+	os_printf("Set Board_ID to %s\n",buff);
+	if (len>0) {
+		sysCfg.board_id=atoi(buff);
+	}
+
+	CFG_Save();
+	httpdRedirect(connData, "/");
+	return HTTPD_CGI_DONE;
+}
 
 void ICACHE_FLASH_ATTR tplBroadcastD(HttpdConnData *connData, char *token, void **arg) {
 
