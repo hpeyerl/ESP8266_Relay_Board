@@ -95,6 +95,14 @@ HttpdBuiltInUrl builtInUrls[]={
     {"/control/thermostat.tpl", cgiEspFsTemplate, tplThermostat},
     {"/control/thermostat.cgi", cgiThermostat, NULL}, 
 #endif
+#ifdef CONFIG_MAX31855
+	{"/control/max31855.tpl", cgiEspFsTemplate, tplMax31855},
+	{"/control/max31855.cgi", cgiMax31855, NULL},
+#endif
+#ifdef CONFIG_SI7020
+	{"/control/si7020.tpl", cgiEspFsTemplate, tplsi7020},
+	{"/control/si7020.cgi", cgisi7020, NULL},
+#endif
 #ifdef CGIPWM_H
 	{"/control/pwm.cgi", cgiPWM, NULL},
 #endif
