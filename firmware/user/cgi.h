@@ -30,5 +30,9 @@ void tplRLYSettings(HttpdConnData *connData, char *token, void **arg);
 int cgiRLYSettings(HttpdConnData *connData);
 void tplSensorSettings(HttpdConnData *connData, char *token, void **arg);
 int cgiSensorSettings(HttpdConnData *connData);
+int cgiMax31855(HttpdConnData *connData);
+int tplMax31855(HttpdConnData *connData, char *token, void **arg);
+int cgisi7020(HttpdConnData *connData);
+int tplsi7020(HttpdConnData *connData, char *token, void **arg);
 
 #endif

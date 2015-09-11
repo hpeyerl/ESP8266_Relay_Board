@@ -23,6 +23,8 @@ Some random cgi routines.
 #include "espmissingincludes.h"
 #include "dht22.h"
 #include "ds18b20.h"
+#include "i2c_si7020.h"
+#include "spi_max31855.h"
 #include "sntp.h"
 #include "time_utils.h"
 #include "config.h"
@@ -968,3 +970,73 @@ int ICACHE_FLASH_ATTR cgiBroadcastD(HttpdConnData *connData) {
 	httpdRedirect(connData, "/");
 	return HTTPD_CGI_DONE;
 }
+
+int ICACHE_FLASH_ATTR
+cgiMax31855(HttpdConnData *connData)
+{
+
+	if (connData->conn==NULL) {
+		//Connection aborted. Clean up.
+		return HTTPD_CGI_DONE;
+	}
+	httpdRedirect(connData, "max31855.tpl");
+	return HTTPD_CGI_DONE;
+
+}
+//
+//Template code for the max31855 page.
+
+int ICACHE_FLASH_ATTR tplMax31855(HttpdConnData *connData, char *token, void **arg) {
+	char buff[128];
+	int16_t internal, kprobe;
+	int ret;
+
+	if (token==NULL) return HTTPD_CGI_DONE;
+
+	os_strcpy(buff, "Unknown");
+	if (os_strcmp(token, "temps")==0) {
+		ret = max31855_read_temps(&kprobe, &internal);
+		if (ret == false)
+			os_sprintf(buff, "Thermocouple error!");
+		else
+			os_sprintf(buff, "Internal: %d Kprobe: %d", internal, kprobe);
+	}
+	httpdSend(connData, buff, -1);
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR
+cgisi7020(HttpdConnData *connData)
+{
+
+	if (connData->conn==NULL) {
+		//Connection aborted. Clean up.
+		return HTTPD_CGI_DONE;
+	}
+	httpdRedirect(connData, "si7020.tpl");
+	return HTTPD_CGI_DONE;
+
+}
+//
+//Template code for the si7020 page.
+
+int ICACHE_FLASH_ATTR tplsi7020(HttpdConnData *connData, char *token, void **arg) {
+	char buff[128];
+	int16_t datum;
+
+	if (token==NULL) return HTTPD_CGI_DONE;
+
+	os_strcpy(buff, "Unknown");
+	if (os_strcmp(token, "temperature")==0) {
+		datum = SI7020_GetTemperature();
+		os_sprintf(buff, "%d", datum);
+	}
+	if (os_strcmp(token, "humidity")==0) {
+		datum = SI7020_GetHumidity();
+		os_sprintf(buff, "%d", datum);
+	}
+
+	httpdSend(connData, buff, -1);
+	return HTTPD_CGI_DONE;
+}
+
