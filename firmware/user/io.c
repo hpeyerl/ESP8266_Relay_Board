@@ -16,7 +16,10 @@
 #include "osapi.h"
 #include "gpio.h"
 #include "config.h"
+#include "spi_max31855.h"
+#include "i2c_si7020.h"
 
+#include "config.h"
 #include "espmissingincludes.h"
 #define BTNGPIO 0
 
@@ -52,33 +55,43 @@ static void ICACHE_FLASH_ATTR resetBtnTimerCb(void *arg) {
 
 void ICACHE_FLASH_ATTR ioInit() {
 	
-	//Set GPIO0, GPIO12-14 to output mode 
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13);
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15);
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
+	switch (sysCfg.board_id) {
+		case BOARD_ID_RELAY_BOARD:
+			//Set GPIO0, GPIO12-14 to output mode 
+			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
+			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13);
+			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15);
+			PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
 
-	//set GPIO to init state
- 	GPIO_OUTPUT_SET(0,(1<<0));
-  	//GPIO_OUTPUT_SET(2,0);
+			//set GPIO to init state
+			GPIO_OUTPUT_SET(0,(1<<0));
+			//GPIO_OUTPUT_SET(2,0);
 
-	if( sysCfg.relay_latching_enable) {
-	
-	os_printf("Relay latching is %d, Relay1=%d,Relay2=%d,Relay3=%d\n\r",(int)sysCfg.relay_latching_enable,(int)sysCfg.relay_1_state,(int)sysCfg.relay_2_state,(int)sysCfg.relay_3_state);
-	
-		currGPIO12State=(int)sysCfg.relay_1_state;
-		currGPIO13State=(int)sysCfg.relay_2_state;
-		currGPIO15State=(int)sysCfg.relay_3_state;
+			if( sysCfg.relay_latching_enable) {
+			
+			os_printf("Relay latching is %d, Relay1=%d,Relay2=%d,Relay3=%d\n\r",(int)sysCfg.relay_latching_enable,(int)sysCfg.relay_1_state,(int)sysCfg.relay_2_state,(int)sysCfg.relay_3_state);
+			
+				currGPIO12State=(int)sysCfg.relay_1_state;
+				currGPIO13State=(int)sysCfg.relay_2_state;
+				currGPIO15State=(int)sysCfg.relay_3_state;
 
-		ioGPIO((int)sysCfg.relay_1_state,12);
-		ioGPIO((int)sysCfg.relay_2_state,13);
-		ioGPIO((int)sysCfg.relay_3_state,15);
-	}
-	
-	else {
-		ioGPIO(0,12);
-		ioGPIO(0,13);
-		ioGPIO(0,15);
+				ioGPIO((int)sysCfg.relay_1_state,12);
+				ioGPIO((int)sysCfg.relay_2_state,13);
+				ioGPIO((int)sysCfg.relay_3_state,15);
+			}
+			
+			else {
+				ioGPIO(0,12);
+				ioGPIO(0,13);
+				ioGPIO(0,15);
+			}
+			break;
+		case BOARD_ID_PHROB_THERMOCOUPLE:
+			max31855_init();
+			break;
+		case BOARD_ID_PHROB_TEMP_HUM:
+			SI7020_Init();
+			break;
 	}
 
 	//gpio_output_set(0, 0, (1<<12), (1<<BTNGPIO));
