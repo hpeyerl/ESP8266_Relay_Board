@@ -8,10 +8,13 @@
 #include "broadcastd.h"
 #include "dht22.h"
 #include "ds18b20.h"
+#include "i2c_si7020.h"
+#include "spi_max31855.h"
 #include "config.h"
 #include "mqtt.h"
 #include "utils.h"
 #include "httpclient.h"
+#include "config.h"
   
 
 /*
@@ -58,9 +61,16 @@ static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 		os_sprintf(buf,buf2,currGPIO12State,currGPIO13State,currGPIO15State,t1,t2,t3);
 	}
 #endif
+#ifdef CONFIG_SI7020
+	if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM)
+		os_sprintf(buf,buf2,SI7020_GetTemperature(),SI7020_GetHumidity());
+#endif
+#ifdef CONFIG_MAX31855
+	if (sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE)
+		os_sprintf(buf,buf2,"%d",max31855_read_ktemp());
+#endif
 		
 	http_get(buf, http_callback_example);	
-	os_printf("Sent HTTP GET: %s\n\r",buf);
 }
  
 
