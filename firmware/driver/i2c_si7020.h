@@ -7,7 +7,10 @@
 
 #define SI7020_RESET	(0xfe)
 #define SI7020_ADDRESS   (0x80)
+#define SI7020_USER1    (0xe7)
 #define SI7020_HUMIDITY (0xe5)
+#define SI7020_SERIAL_A (0xfa)
+#define SI7020_SERIAL_B (0xfc)
 /*
  * 0xe0 re-uses the measurement made during the humidity measurement
  * 0xe3 is a real temperature measurement.
