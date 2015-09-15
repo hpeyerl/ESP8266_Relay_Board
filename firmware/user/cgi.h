@@ -22,7 +22,7 @@ void tplBroadcastD(HttpdConnData *connData, char *token, void **arg);
 int cgiBroadcastD(HttpdConnData *connData);
 void tplConfig(HttpdConnData *connData, char *token, void **arg);
 int cgiConfig(HttpdConnData *connData);
-int tplDeviceStr(HttpdConnData *connData, char *token, void **arg);
+int tplIndex(HttpdConnData *connData, char *token, void **arg);
 void tplNTP(HttpdConnData *connData, char *token, void **arg);
 int cgiNTP(HttpdConnData *connData);
 int cgiReset(HttpdConnData *connData);
@@ -34,5 +34,7 @@ int cgiMax31855(HttpdConnData *connData);
 int tplMax31855(HttpdConnData *connData, char *token, void **arg);
 int cgisi7020(HttpdConnData *connData);
 int tplsi7020(HttpdConnData *connData, char *token, void **arg);
+int cgimlx91205(HttpdConnData *connData);
+int tplmlx91205(HttpdConnData *connData, char *token, void **arg);
 
 #endif

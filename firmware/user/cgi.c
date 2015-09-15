@@ -31,22 +31,53 @@ Some random cgi routines.
 
 static const char *board_id_str[] = {
 	"Relay Board",
-	"Dual 16A Relay Phrob" ,
-	"Single 16A Relay Phrob" ,
 	"Thermocouple Phrob",
 	"Temperature Humidity Phrob" ,
 	"Current Sensor Phrob",
 	"Water Sensor Phrob",
 	"Tilt Sensor Phrob",
+	"Dual 16A Relay Phrob" ,
+	"Single 16A Relay Phrob" ,
 	"Signal Relay Phrob" ,
 };
 
-int ICACHE_FLASH_ATTR tplDeviceStr(HttpdConnData *connData, char *token, void **arg) {
+int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg) {
 	char buff[128];
 	if (token==NULL) return HTTPD_CGI_DONE;
 
+	os_sprintf(buff, "<nbsp>");
+
 	if (os_strcmp(token, "board_id")==0) {
 		os_sprintf(buff, "%s", board_id_str[sysCfg.board_id]);
+	}
+#ifdef CONFIG_MQTT
+	if (os_strncmp(token, "config_mqtt", 10)==0) {
+		os_strcpy(buff, "<li><a href=\"config/mqtt.tpl\">MQTT</a> settings.</li>");
+	}
+#endif
+	if (os_strcmp(token, "config_sensors")==0 && (sysCfg.board_id<80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+		os_strcpy(buff, "<ul><li>Sensor readings:</li>");
+	}
+	if (os_strcmp(token, "config_sensors_end")==0 && (sysCfg.board_id<80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+		os_strcpy(buff, "</ul>");
+	}
+#ifdef CONFIG_DHT22
+	if (os_strcmp(token, "config_dht22")==0 && sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		os_strcpy(buff, "<li>    <a href=\"control/dht22.tpl\">DHT22</a></li>");
+	}
+#endif
+#ifdef CONFIG_SI7020
+	if (os_strcmp(token, "config_si7020")==0 && sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM) {
+		os_strcpy(buff, "<li>    <a href=\"control/si7020.tpl\">SI7020</a></li>");
+	}
+#endif
+#ifdef CONFIG_MAX31855
+	if ((os_strcmp(token, "config_max31855")==0) && (sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE)) {
+		os_strcpy(buff, "<li>    <a href=\"control/max31855.tpl\">MAX31855</a>.</li>");
+	}
+#endif
+	if (os_strcmp(token, "config_relays")==0 && (sysCfg.board_id>80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+		os_strcpy(buff, "<li>Relay <a href=\"config/relay.tpl\">settings</a>.</li><li><a href=\"control/relay.html\">Relay</a> control page.</li>");
 	}
 
 	httpdSend(connData, buff, -1);
@@ -1033,6 +1064,37 @@ int ICACHE_FLASH_ATTR tplsi7020(HttpdConnData *connData, char *token, void **arg
 	}
 	if (os_strcmp(token, "humidity")==0) {
 		datum = SI7020_GetHumidity();
+		os_sprintf(buff, "%d", datum);
+	}
+
+	httpdSend(connData, buff, -1);
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR
+cgimlx91205(HttpdConnData *connData)
+{
+
+	if (connData->conn==NULL) {
+		//Connection aborted. Clean up.
+		return HTTPD_CGI_DONE;
+	}
+	httpdRedirect(connData, "mlx91205.tpl");
+	return HTTPD_CGI_DONE;
+
+}
+//
+//Template code for the mlx91205 page.
+
+int ICACHE_FLASH_ATTR tplmlx91205(HttpdConnData *connData, char *token, void **arg) {
+	char buff[128];
+	int16_t datum;
+
+	if (token==NULL) return HTTPD_CGI_DONE;
+
+	os_strcpy(buff, "Unknown");
+	if (os_strcmp(token, "current")==0) {
+		datum = mlx91205_get();
 		os_sprintf(buff, "%d", datum);
 	}
 

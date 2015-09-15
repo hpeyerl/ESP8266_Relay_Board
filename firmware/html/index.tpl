@@ -9,20 +9,19 @@
 <p>
 <ul>
 <li><a href="config/wifi/wifi.tpl">WiFi</a> settings.</li>
-<li><a href="config/mqtt.tpl">MQTT</a> settings.</li>
+%config_mqtt%
 <li><a href="config/httpd.tpl">HTTP Daemon</a> settings.</li>
 <li><a href="config/ntp.tpl">NTP</a> settings.</li>
 <li><a href="config/sensor.tpl">Sensor</a> settings.</li>
 <li><a href="config/broadcastd.tpl">Broadcast Daemon</a> settings.</li>
-<li>Relay <a href="config/relay.tpl">settings</a>.</li>
-<li><a href="control/relay.html">Relay</a> control page.</li>
+%config_relays%
 <li><a href="control/thermostat.html">Thermostat</a> control page.</li>
 <li><a href="control/thingspeak.html">Thingspeak</a> report page.</li>
-<li>Sensor readings:</li>
-<li>    <a href="control/dht22.tpl">DHT22</a></li>
-<li>    <a href="control/ds18b20.tpl">DS18B20</a>.</li>
-<li>    <a href="control/si7020.tpl">SI7020</a></li>
-<li>    <a href="control/max31855.tpl">MAX31855</a>.</li>
+%config_sensors%
+%config_dht22%
+%config_si7020%
+%config_max31855%
+%config_sensors_end%
 <li><a href="control/reset.cgi" onclick="return confirm('Are you sure you want to restart?')">Restart</a> the system.</li>
 <li><a href="about.tpl">About</a></li>
 </ul>
