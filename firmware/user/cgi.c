@@ -56,7 +56,7 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 	}
 #endif
 	if (os_strcmp(token, "config_sensors")==0 && (sysCfg.board_id<80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
-		os_strcpy(buff, "<ul><li>Sensor readings:</li>");
+		os_strcpy(buff, "<li>Sensor readings:</li><ul>");
 	}
 	if (os_strcmp(token, "config_sensors_end")==0 && (sysCfg.board_id<80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_strcpy(buff, "</ul>");
