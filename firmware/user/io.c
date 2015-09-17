@@ -25,9 +25,15 @@
 
 static ETSTimer resetBtntimer;
 
+//
+// Relay GPIO handling is kinda dumb.  Needs to be more generic.
+//
  char currGPIO12State=0;
  char currGPIO13State=0;
  char currGPIO15State=0;
+ char relay1GPIO = 12;
+ char relay2GPIO = 13;
+ char relay3GPIO = 15;
 
 void ICACHE_FLASH_ATTR ioGPIO(int ena, int gpio) {
 	//gpio_output_set is overkill. ToDo: use better macros
@@ -58,7 +64,6 @@ void ICACHE_FLASH_ATTR ioInit() {
 	switch (sysCfg.board_id) {
 		case BOARD_ID_RELAY_BOARD:
 			//Set GPIO0, GPIO12-14 to output mode 
-			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
 			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13);
 			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15);
 			PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
@@ -85,6 +90,38 @@ void ICACHE_FLASH_ATTR ioInit() {
 				ioGPIO(0,13);
 				ioGPIO(0,15);
 			}
+			break;
+
+		case BOARD_ID_PHROB_SINGLE_RELAY:
+		case BOARD_ID_PHROB_SIGNAL_RELAY:
+			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
+			if( sysCfg.relay_latching_enable) {
+				os_printf("Relay latching is %d, Relay1=%d\n\r",(int)sysCfg.relay_latching_enable,(int)sysCfg.relay_1_state);
+				currGPIO12State=(int)sysCfg.relay_1_state;
+				ioGPIO((int)sysCfg.relay_1_state,12);
+			}
+			else {
+				ioGPIO(0,12);
+			}
+
+			break;
+		case BOARD_ID_PHROB_DUAL_RELAY:
+			relay1GPIO = 4;
+			relay2GPIO = 5;
+			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO4);
+			PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO5);
+			if( sysCfg.relay_latching_enable) {
+				os_printf("Relay latching is %d, Relay1=%d,Relay2=%d\n\r",(int)sysCfg.relay_latching_enable,(int)sysCfg.relay_1_state,(int)sysCfg.relay_2_state);
+				currGPIO12State=(int)sysCfg.relay_1_state;
+				currGPIO13State=(int)sysCfg.relay_2_state;
+				ioGPIO((int)sysCfg.relay_1_state,4);
+				ioGPIO((int)sysCfg.relay_2_state,5);
+			}
+			else {
+				ioGPIO(0,4);
+				ioGPIO(0,5);
+			}
+
 			break;
 		case BOARD_ID_PHROB_THERMOCOUPLE:
 			max31855_init();
