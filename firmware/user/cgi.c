@@ -55,12 +55,14 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 		os_strcpy(buff, "<li><a href=\"config/mqtt.tpl\">MQTT</a> settings.</li>");
 	}
 #endif
-	if (os_strcmp(token, "config_sensors")==0 && (sysCfg.board_id<80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+#if defined(CONFIG_DHT22) || defined(CONFIG_SI7020) || defined(CONFIG_MAX31855)
+	if (os_strcmp(token, "config_sensors")==0) {
 		os_strcpy(buff, "<li>Sensor readings:</li><ul>");
 	}
-	if (os_strcmp(token, "config_sensors_end")==0 && (sysCfg.board_id<80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+	if (os_strcmp(token, "config_sensors_end")==0) {
 		os_strcpy(buff, "</ul>");
 	}
+#endif
 #ifdef CONFIG_DHT22
 	if (os_strcmp(token, "config_dht22")==0 && sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
 		os_strcpy(buff, "<li>    <a href=\"control/dht22.tpl\">DHT22</a></li>");
@@ -76,7 +78,12 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 		os_strcpy(buff, "<li>    <a href=\"control/max31855.tpl\">MAX31855</a>.</li>");
 	}
 #endif
-	if (os_strcmp(token, "config_relays")==0 && (sysCfg.board_id>80 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+	if (os_strcmp(token, "config_relays")==0
+		       	 && (sysCfg.board_id==BOARD_ID_PHROB_DUAL_RELAY
+			 || sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY
+			 || sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY
+			 || sysCfg.board_id == BOARD_ID_RELAY_BOARD))
+	{
 		os_strcpy(buff, "<li>Relay <a href=\"config/relay.tpl\">settings</a>.</li><li><a href=\"control/relay.html\">Relay</a> control page.</li>");
 	}
 
@@ -100,7 +107,7 @@ int ICACHE_FLASH_ATTR cgiGPIO(HttpdConnData *connData) {
 	len=httpdFindArg(connData->getArgs, "relay1", buff, sizeof(buff));
 	if (len>0) {
 		currGPIO12State=atoi(buff);
-		ioGPIO(currGPIO12State,12);
+		ioGPIO(currGPIO12State,relay1GPIO);
 		gotcmd=1;
 		//Manually switching relays means switching the thermostat off
 		if(sysCfg.thermostat1state!=0) {
@@ -111,7 +118,7 @@ int ICACHE_FLASH_ATTR cgiGPIO(HttpdConnData *connData) {
 	len=httpdFindArg(connData->getArgs, "relay2", buff, sizeof(buff));
 	if (len>0) {
 		currGPIO13State=atoi(buff);
-		ioGPIO(currGPIO13State,13);
+		ioGPIO(currGPIO13State,relay2GPIO);
 		gotcmd=1;
 		//Manually switching relays means switching the thermostat off
 		if(sysCfg.thermostat2state!=0) {
@@ -123,7 +130,7 @@ int ICACHE_FLASH_ATTR cgiGPIO(HttpdConnData *connData) {
 	len=httpdFindArg(connData->getArgs, "relay3", buff, sizeof(buff));
 	if (len>0) {
 		currGPIO15State=atoi(buff);
-		ioGPIO(currGPIO15State,15);
+		ioGPIO(currGPIO15State,relay3GPIO);
 		gotcmd=1;
 		//Manually switching relays means switching the thermostat off
 		if(sysCfg.thermostat3state!=0) {
