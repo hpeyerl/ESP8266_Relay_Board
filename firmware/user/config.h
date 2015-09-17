@@ -56,7 +56,6 @@ daySchedule weekSched[7]; // 7 days per week
 
 /*
  * Board ID is used in ioInit to configure I's and O's
- * Outputs are |=0x80
  */
 #define BOARD_ID_RELAY_BOARD		0x0
 #define BOARD_ID_PHROB_THERMOCOUPLE	0x1
@@ -64,9 +63,9 @@ daySchedule weekSched[7]; // 7 days per week
 #define BOARD_ID_PHROB_HALL_EFFECT	0x3
 #define BOARD_ID_PHROB_WATER		0x4
 #define BOARD_ID_PHROB_TILT		0x5
-#define BOARD_ID_PHROB_DUAL_RELAY	0x81
-#define BOARD_ID_PHROB_SINGLE_RELAY	0x82
-#define BOARD_ID_PHROB_SIGNAL_RELAY	0x83
+#define BOARD_ID_PHROB_DUAL_RELAY	0x6
+#define BOARD_ID_PHROB_SINGLE_RELAY	0x7
+#define BOARD_ID_PHROB_SIGNAL_RELAY	0x8
 /*
  */
 
