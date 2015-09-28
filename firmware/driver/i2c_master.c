@@ -30,7 +30,7 @@ LOCAL uint8 pinSCL = 0;
  *				uint8 SCL
  * Returns	  : NONE
 *******************************************************************************/
-LOCAL void i2c_master_setDC(uint8 SDA, uint8 SCL)
+void i2c_master_setDC(uint8 SDA, uint8 SCL)
 {
 	SDA	&= 0x01;
 	SCL	&= 0x01;
