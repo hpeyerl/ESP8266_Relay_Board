@@ -11,6 +11,7 @@
 #define SI7020_HUMIDITY (0xe5)
 #define SI7020_SERIAL_A (0xfa)
 #define SI7020_SERIAL_B (0xfc)
+#define SI7020_READ_EE (0x84)
 /*
  * 0xe0 re-uses the measurement made during the humidity measurement
  * 0xe3 is a real temperature measurement.
