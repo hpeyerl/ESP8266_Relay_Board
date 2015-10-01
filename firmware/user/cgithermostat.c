@@ -11,6 +11,7 @@ Some random cgi routines.
  * ----------------------------------------------------------------------------
  */
 
+#ifdef CONFIG_THERMOSTAT
 #include <stdlib.h>
 #include <string.h>
 #include <osapi.h>
@@ -73,11 +74,11 @@ int ICACHE_FLASH_ATTR cgiThermostat(HttpdConnData *connData) {
 
 		if(os_strcmp(buff,"state")==0) {
 		
-			if(sysCfg.sensor_dht22_enable && (sysCfg.thermostat1_input == 1 || sysCfg.thermostat1_input == 2)) { 
+			if(sysCfg.sensor_temphum_enable && (sysCfg.thermostat1_input == 1 || sysCfg.thermostat1_input == 2)) { 
 				dht_temp_str(temp);
 				dht_humi_str(humi);
 			}
-			else if (sysCfg.sensor_ds18b20_enable && sysCfg.thermostat1_input == 0) { 			
+			else if (sysCfg.sensor_temp_enable && sysCfg.thermostat1_input == 0) { 			
 				ds_str(temp,0);
 			}
 
@@ -97,7 +98,7 @@ int ICACHE_FLASH_ATTR cgiThermostat(HttpdConnData *connData) {
 		}
 
 		if(os_strcmp(buff,"temperature")==0) {
-			if(sysCfg.sensor_dht22_enable) { 
+			if(sysCfg.sensor_temphum_enable) { 
 				dht_temp_str(temp);
 			}
 			else {
@@ -260,3 +261,4 @@ int ICACHE_FLASH_ATTR cgiThermostat(HttpdConnData *connData) {
 	return HTTPD_CGI_DONE;
 }
 
+#endif // CONFIG_THERMOSTAT
