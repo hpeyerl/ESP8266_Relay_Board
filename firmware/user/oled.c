@@ -1,3 +1,4 @@
+#ifdef CONFIG_OLED
 #include "ets_sys.h"
 #include "osapi.h"
 #include "espmissingincludes.h"
@@ -44,7 +45,7 @@ static void ICACHE_FLASH_ATTR pollOLEDCb(void * arg){
 		
 		if(hour >= 6 && hour <=23) { //Protect the OLED from burning
  
-			if(sysCfg.sensor_dht22_enable) {
+			if(sysCfg.sensor_temphum_enable) {
 				dht_temp_str(temp);
 				os_sprintf(displaystr, "Temp: %sC    ", temp);
 				OLED_Print(2, 0, (unsigned char *)displaystr, 2);
@@ -54,7 +55,7 @@ static void ICACHE_FLASH_ATTR pollOLEDCb(void * arg){
 				OLED_Print(2, 2, (unsigned char *)displaystr, 2);
 			}
 		
-			if(sysCfg.sensor_ds18b20_enable) {
+			if(sysCfg.sensor_temp_enable) {
 				ds_str(temp,0);
 				os_sprintf(displaystr, "Temp: %sC    ", temp);
 				OLED_Print(2 + rand()%2, rand()%4, (unsigned char *)displaystr, 2);		
@@ -78,3 +79,4 @@ void ICACHE_FLASH_ATTR OLEDInit(void) {
   os_timer_setfn(&oledTimer, pollOLEDCb, NULL);
   os_timer_arm(&oledTimer, 20000, 1);
 }
+#endif
