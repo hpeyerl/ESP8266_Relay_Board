@@ -52,7 +52,9 @@ CONFIG += -DCONFIG_MQTT
 # CONFIG += -DCONFIG_DS18B20
 CONFIG += -DCONFIG_MAX31855
 CONFIG += -DCONFIG_SI7020
+# CONFIG += -DCONFIG_MLX91205
 # CONFIG += -DCONFIG_GET_EXTERNAL_IP
+# CONFIG += -DCONFIG_THERMOSTAT
 
 # libraries used in this project, mainly provided by the SDK
 LIBS		= c hal gcc phy pp net80211 wpa main lwip
@@ -69,6 +71,7 @@ CFLAGS		= -Os -ggdb -std=c99 -Wpointer-arith -Wundef -Wall -Wl,-EL -fno-inline-f
 
 # linker flags used to generate the main object file
 LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static -L$(SDK_EXTRA_LIBS)
+LDFLAGS += -Wl,-Map=out.map
 
 # linker script used for the above linkier step
 LD_SCRIPT	= eagle.app.v6.ld
