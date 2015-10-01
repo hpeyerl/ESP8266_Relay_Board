@@ -84,7 +84,7 @@ void ICACHE_FLASH_ATTR WIFI_Connect(WifiCallback cb)
 	wifi_get_ip_info(STATION_IF, &info);
 	char *dhcp = (char *)sysCfg.sta_mode; 
 	char *ip, *mask, *gw;
-	if (!dhcp || strcmp(dhcp, "dhcp") != 0)
+	if (!dhcp || os_strcmp(dhcp, "dhcp") != 0)
 	{
 		ip = (char *)sysCfg.sta_ip; 
 		mask = (char *)sysCfg.sta_mask;
