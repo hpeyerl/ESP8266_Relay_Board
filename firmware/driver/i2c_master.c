@@ -22,6 +22,10 @@ LOCAL uint8 m_nLastSCL;
 LOCAL uint8 pinSDA = 2;
 LOCAL uint8 pinSCL = 0;
 
+#ifdef CONFIG_I2C_MASTER_DEBUG
+#define console_printf os_printf
+#endif
+
 /******************************************************************************
  * FunctionName : i2c_master_setDC
  * Description  : Internal used function -
