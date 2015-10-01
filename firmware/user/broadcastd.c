@@ -38,9 +38,11 @@ static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 
     char buf[384];
 	char buf2[255];
+#if defined(CONFIG_DHT22) || defined(CONFIG_DS18B20)
 	char t1[32];
 	char t2[32];
 	char t3[32];
+#endif
 	
 	//double expand as sysCfg.broadcastd_url cntains placeholders as well
 	os_sprintf(buf2,"http://%s:%d/%s",sysCfg.broadcastd_host,(int)sysCfg.broadcastd_port,sysCfg.broadcastd_url);
@@ -79,8 +81,10 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 	if(sysCfg.mqtt_enable==1) {
 		//os_printf("Sending MQTT\n");
 		
-		if(sysCfg.sensor_dht22_enable) {
+		if(sysCfg.sensor_temphum_enable) {
+#ifdef CONFIG_DHT22
 			struct sensor_reading* result = readDHT();
+
 			if(result->success) {
 				char temp[32];
 				char topic[128];
@@ -88,19 +92,32 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 				
 				dht_temp_str(temp);
 				len = os_strlen(temp);
-				os_sprintf(topic,"%s",sysCfg.mqtt_dht22_temp_pub_topic);
+				os_sprintf(topic,"%s",sysCfg.mqtt_temphum_temp_pub_topic);
 				MQTT_Publish(&mqttClient,topic,temp,len,0,0);
 				os_printf("Published \"%s\" to topic \"%s\"\n",temp,topic);
 				
 				dht_humi_str(temp);
 				len = os_strlen(temp);
-				os_sprintf(topic,"%s",sysCfg.mqtt_dht22_humi_pub_topic);
+				os_sprintf(topic,"%s",sysCfg.mqtt_temphum_humi_pub_topic);
 				MQTT_Publish(&mqttClient,topic,temp,len,0,0);
 				os_printf("Published \"%s\" to topic \"%s\"\n",temp,topic);
 			}
+#endif
+#ifdef CONFIG_SI7020
+			char buf[32];
+			char topic[128];
+			int len;
+			os_sprintf(topic,"%s",sysCfg.mqtt_temphum_temp_pub_topic);
+			len = os_sprintf(buf, "%d",SI7020_GetTemperature());
+			MQTT_Publish(&mqttClient,topic,buf,len,0,0);
+			os_sprintf(topic,"%s",sysCfg.mqtt_temphum_humi_pub_topic);
+			len = os_sprintf(buf, "%d",SI7020_GetHumidity());
+			MQTT_Publish(&mqttClient,topic,buf,len,0,0);
+#endif
 		}
 		
-		if(sysCfg.sensor_ds18b20_enable) {
+		if(sysCfg.sensor_temp_enable) {
+#ifdef CONFIG_DS18B20
 			struct sensor_reading* result = read_ds18b20();
 			if(result->success) {
 				char temp[32];
@@ -108,10 +125,19 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 				int len;
 				ds_str(temp,0);
 				len = os_strlen(temp);
-				os_sprintf(topic,"%s",sysCfg.mqtt_ds18b20_temp_pub_topic);
+				os_sprintf(topic,"%s",sysCfg.mqtt_temp_pub_topic);
 				MQTT_Publish(&mqttClient,topic,temp,len,0,0);
 				os_printf("Published \"%s\" to topic \"%s\"\n",temp,topic);
 			}
+#endif
+#ifdef CONFIG_MAX31855
+			char buf[32];
+			char topic[128];
+			int len;
+			os_sprintf(topic,"%s",sysCfg.mqtt_temp_pub_topic);
+			len = os_sprintf(buf, "%d",max31855_read_ktemp());
+			MQTT_Publish(&mqttClient,topic,buf,len,0,0);
+#endif
 		}
     }
 }

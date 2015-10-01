@@ -49,12 +49,23 @@
 #define MQTT_PASS			""
 #define MQTT_USE_SSL		0
 #define MQTT_RELAY_SUBS_TOPIC 		"esp_%08X/out/relay/#"
-#define MQTT_DHT22_TEMP_PUB_TOPIC  	"esp_%08X/in/dht22/temperature" 
-#define MQTT_DHT22_HUMI_PUB_TOPIC   "esp_%08X/in/dht22/humidity" 		
-#define MQTT_DS18B20_TEMP_PUB_TOPIC "esp_%08X/in/ds18b20/temperature"
+#ifdef CONFIG_DHT22
+#define MQTT_TEMPHUM_TEMP_PUB_TOPIC  	"esp_%08X/in/dht22/temperature" 
+#define MQTT_TEMPHUM_HUMI_PUB_TOPIC   "esp_%08X/in/dht22/humidity" 		
+#endif
+#ifdef CONFIG_SI7020
+#define MQTT_TEMPHUM_TEMP_PUB_TOPIC  	"esp_%08X/in/si7020/temperature" 
+#define MQTT_TEMPHUM_HUMI_PUB_TOPIC   "esp_%08X/in/si7020/humidity" 		
+#endif
+#ifdef CONFIG_DS18B20
+#define MQTT_TEMP_PUB_TOPIC "esp_%08X/in/ds18b20/temperature"
+#endif
+#ifdef CONFIG_MAX31855
+#define MQTT_TEMP_PUB_TOPIC "esp_%08X/in/max31855/temperature"
+#endif
 
-#define SENSOR_DS18B20_ENABLE     0
-#define SENSOR_DHT22_ENABLE       0
+#define SENSOR_TEMPHUM_ENABLE     0
+#define SENSOR_TEMP_ENABLE       0
 
 #define RELAY_LATCHING_ENABLE       0
 #define RELAY1NAME       "Relay 1"

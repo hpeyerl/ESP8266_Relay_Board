@@ -34,7 +34,9 @@
 //#include "pwm.h"
 //#include "cgipwm.h"
 
-//#include "oled.h"
+#ifdef CONFIG_OLED
+#include "oled.h"
+#endif
 
 #ifdef CONFIG_MQTT
 MQTT_Client mqttClient;
@@ -103,8 +105,10 @@ HttpdBuiltInUrl builtInUrls[]={
 	{"/control/si7020.tpl", cgiEspFsTemplate, tplsi7020},
 	{"/control/si7020.cgi", cgisi7020, NULL},
 #endif
+#ifdef CONFIG_MLX91205
 	{"/control/mlx91205.tpl", cgiEspFsTemplate, tplmlx91205},
 	{"/control/mlx91205.cgi", cgimlx91205, NULL},
+#endif
 #ifdef CGIPWM_H
 	{"/control/pwm.cgi", cgiPWM, NULL},
 #endif
@@ -148,14 +152,16 @@ void ICACHE_FLASH_ATTR http_callback_IP(char * response, int http_status, char *
 		os_printf("External IP address=%s\n", response);
 	}
 }
+#endif // CONFIG_GET_EXTERNAL_IP
 
-
+#if 1
 void ICACHE_FLASH_ATTR wifiConnectCb(uint8_t status)
 {
 	if(status == STATION_GOT_IP){
-
+#ifdef CONFIG_GET_EXTERNAL_IP
 		os_printf("Trying to find external IP address\n");
 		http_get("http://wtfismyip.com/text", http_callback_IP);
+#endif
 
 #ifdef CONFIG_MQTT
 		if(sysCfg.mqtt_enable==1) {
@@ -166,8 +172,8 @@ void ICACHE_FLASH_ATTR wifiConnectCb(uint8_t status)
 #endif // CONFIG_MQTT
 	}	
 }
+#endif
 
-#endif // CONFIG_GET_EXTERNAL_IP
 
 #ifdef CONFIG_MQTT
 void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
@@ -245,7 +251,7 @@ void ICACHE_FLASH_ATTR user_init(void) {
 	CFG_Load();
 	ioInit();
 	
-#ifdef NOTYET
+#if 1
 	WIFI_Connect(wifiConnectCb);
 #endif
 
@@ -311,7 +317,9 @@ void ICACHE_FLASH_ATTR user_init(void) {
     pwm_start();
 #endif
 	
-	//OLEDInit();
+#ifdef CONFIG_OLED
+	OLEDInit();
+#endif
 	
 }
 

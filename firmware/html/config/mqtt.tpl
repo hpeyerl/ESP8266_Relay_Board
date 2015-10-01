@@ -21,14 +21,15 @@ if (document.getElementById('mqtt-enable').checked) v=false;
 sd('mqtt-host',v);
 sd('mqtt-port',v);
 sd('mqtt-keepalive',v);
+sd('mqtt-deep-sleep-time',v);
 sd('mqtt-devid',v);
 sd('mqtt-user',v);
 sd('mqtt-pass',v);
 sd('mqtt-use-ssl',v);
 sd('mqtt-relay-subs-topic',v);
-sd('mqtt-dht22-temp-pub-topic',v);
-sd('mqtt-dht22-humi-pub-topic',v);
-sd('mqtt-ds18b20-temp-pub-topic',v);
+sd('mqtt-temphum-temp-pub-topic',v);
+sd('mqtt-temphum-humi-pub-topic',v);
+sd('mqtt-temp-pub-topic',v);
 
 }
 
@@ -47,14 +48,15 @@ sd('mqtt-ds18b20-temp-pub-topic',v);
 <tr><td>Host:</td><td><input type="text" name="mqtt-host" id="mqtt-host" value="%mqtt-host%"/>     </td></tr>
 <tr><td>Port:</td><td><input type="text" name="mqtt-port" id="mqtt-port" value="%mqtt-port%"/>     </td></tr>
 <tr><td>Keepalive (sec):</td><td><input type="text" name="mqtt-keepalive" id="mqtt-keepalive" value="%mqtt-keepalive%"/> </td></tr>
+<tr><td>Deep Sleep Time (sec):</td><td><input type="text" name="mqtt-deep-sleep-time" id="mqtt-deep-sleep-time" value="%mqtt-deep-sleep-time%"/> </td></tr>
 <tr><td>Device ID:</td><td><input type="text" name="mqtt-devid" id="mqtt-devid" value="%mqtt-devid%"/>   </td></tr>
 <tr><td>User:</td><td><input type="text" name="mqtt-user" id="mqtt-user" value="%mqtt-user%"/>     </td></tr>
 <tr><td>Password:</td><td><input type="password" name="mqtt-pass" id="mqtt-pass" value="%mqtt-pass%"/>     </td></tr>
 <tr><td>Use SSL?:</td><td><input type="checkbox" name="mqtt-use-ssl" id="mqtt-use-ssl" /> (max 1024 bit key size)  </td></tr>
 <tr><td>Relays subs topic:</td><td><input type="text" name="mqtt-relay-subs-topic" id="mqtt-relay-subs-topic" value="%mqtt-relay-subs-topic%">     </td></tr>
-<tr><td>DHT22 temp pub topic:</td><td><input type="text" name="mqtt-dht22-temp-pub-topic" id="mqtt-dht22-temp-pub-topic" value="%mqtt-dht22-temp-pub-topic%">     </td></tr>
-<tr><td>DHT22 humi pub topic:</td><td><input type="text" name="mqtt-dht22-humi-pub-topic" id="mqtt-dht22-humi-pub-topic" value="%mqtt-dht22-humi-pub-topic%">     </td></tr>
-<tr><td>DS18B20 temp pub topic:</td><td><input type="text" name="mqtt-ds18b20-temp-pub-topic" id="mqtt-ds18b20-temp-pub-topic" value="%mqtt-ds18b20-temp-pub-topic%">     </td></tr>
+%config_temphum1%
+%config_temphum2%
+%config_temp%
 <tr><td><button type="button" onClick="parent.location='/'">Back</button><input type="submit" name="save" value="Save"></td></tr>
 </table>
 </form>

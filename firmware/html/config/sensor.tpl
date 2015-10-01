@@ -11,8 +11,8 @@
 <form name="sensorform" action="sensor.cgi" method="post">
 
 <table>
-<tr><td>DS18B20 enabled?:</td><td><input type="checkbox" name="sensor-ds18b20-enable" id="sensor-ds18b20-enable" %sensor-ds18b20-enable% /></td></tr>
-<tr><td>DHT22 enabled?:</td><td><input type="checkbox" name="sensor-dht22-enable" id="sensor-dht22-enable" %sensor-dht22-enable% /></td></tr>
+<tr><td>Temp enabled?:</td><td><input type="checkbox" name="sensor-temp-enable" id="sensor-temp-enable" %sensor-temp-enable% /></td></tr>
+<tr><td>Temp/Humi enabled?:</td><td><input type="checkbox" name="sensor-temp-humi-enable" id="sensor-temp-humi-enable" %sensor-temp-humi-enable% /></td></tr>
 <tr><td>Thermostat input:</td><td>
 
 <select name="thermostat1-input" id="thermostat1-input">

@@ -438,11 +438,12 @@ void ICACHE_FLASH_ATTR tplUI(HttpdConnData *connData, char *token, void **arg) {
 
 void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg) {
 
-	char buff[128];
+	char buff[192];
 	if (token==NULL) return;
 	
 	os_strcpy(buff, "Unknown");
 
+	
 	if (os_strcmp(token, "mqtt-enable")==0) {
 			os_sprintf(buff, "%d", (int)sysCfg.mqtt_enable);
 	}
@@ -479,17 +480,25 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 			os_strcpy(buff, (char *)sysCfg.mqtt_relay_subs_topic);
 	}
 
-	if (os_strcmp(token, "mqtt-dht22-temp-pub-topic")==0) {
-			os_strcpy(buff, (char *)sysCfg.mqtt_dht22_temp_pub_topic);
-	}
+#if defined(CONFIG_SI7020) || defined(CONFIG_DHT22)
+        if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM || sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		if (os_strcmp(token, "config_temphum1")==0) {
+			os_sprintf(buff, "<tr><td>Temperature pub topic:</td><td><input type=\"text\" name=\"mqtt-temphum-temp-pub-topic\" id=\"mqtt-temphum-temp-pub-topic\" value=\"%s\">     </td></tr>", sysCfg.mqtt_temphum_temp_pub_topic);
+		}
+		if (os_strcmp(token, "config_temphum2")==0) {
+			os_sprintf(buff, "<tr><td>Humidity pub topic:</td><td><input type=\"text\" name=\"mqtt-temphum-humi-pub-topic\" id=\"mqtt-temphum-humi-pub-topic\" value=\"%s\">     </td></tr>", sysCfg.mqtt_temphum_humi_pub_topic);
+		}
 
-	if (os_strcmp(token, "mqtt-dht22-humi-pub-topic")==0) {
-			os_strcpy(buff, (char *)sysCfg.mqtt_dht22_humi_pub_topic);
 	}
-	
-	if (os_strcmp(token, "mqtt-ds18b20-temp-pub-topic")==0) {
-			os_strcpy(buff, (char *)sysCfg.mqtt_ds18b20_temp_pub_topic);
+#endif
+
+#if defined(CONFIG_DS18B20) || defined(CONFIG_MAX31855)
+        if (sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE || sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		if (os_strcmp(token, "config_temp")==0) {
+			os_sprintf(buff, "<tr><td>Temperature pub topic:</td><td><input type=\"text\" name=\"mqtt-temp-pub-topic\" id=\"mqtt-temp-pub-topic\" value=\"%s\">     </td></tr>", sysCfg.mqtt_temp_pub_topic);
+		}
 	}
+#endif
 	
 	httpdSend(connData, buff, -1);
 }
@@ -502,7 +511,6 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 		//Connection aborted. Clean up.
 		return HTTPD_CGI_DONE;
 	}
-
 
 	len=httpdFindArg(connData->post->buff, "mqtt-enable", buff, sizeof(buff));
 	sysCfg.mqtt_enable = (len > 0) ? 1:0;
@@ -545,19 +553,19 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-dht22-temp-pub-topic", buff, sizeof(buff));
+		len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
 	if (len>0) {
-		os_sprintf((char *)sysCfg.mqtt_dht22_temp_pub_topic,buff);
+		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-dht22-humi-pub-topic", buff, sizeof(buff));
+		len=httpdFindArg(connData->post->buff, "mqtt-temphum-humi-pub-topic", buff, sizeof(buff));
 	if (len>0) {
-		os_sprintf((char *)sysCfg.mqtt_dht22_humi_pub_topic,buff);
+		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic,buff);
 	}
 
-		len=httpdFindArg(connData->post->buff, "mqtt-ds18b20-temp-pub-topic", buff, sizeof(buff));
+		len=httpdFindArg(connData->post->buff, "mqtt-temp-pub-topic", buff, sizeof(buff));
 	if (len>0) {
-		os_sprintf((char *)sysCfg.mqtt_ds18b20_temp_pub_topic,buff);
+		os_sprintf((char *)sysCfg.mqtt_temp_pub_topic,buff);
 	}
 
 	CFG_Save();
@@ -783,11 +791,11 @@ int ICACHE_FLASH_ATTR cgiSensorSettings(HttpdConnData *connData) {
 		return HTTPD_CGI_DONE;
 	}
 	
-	len=httpdFindArg(connData->post->buff, "sensor-ds18b20-enable", buff, sizeof(buff));
-	sysCfg.sensor_ds18b20_enable = (len > 0) ? 1:0;
+	len=httpdFindArg(connData->post->buff, "sensor-temp-enable", buff, sizeof(buff));
+	sysCfg.sensor_temp_enable = (len > 0) ? 1:0;
 		
-	len=httpdFindArg(connData->post->buff, "sensor-dht22-enable", buff, sizeof(buff));
-	sysCfg.sensor_dht22_enable = (len > 0) ? 1:0;
+	len=httpdFindArg(connData->post->buff, "sensor-temp-humi-enable", buff, sizeof(buff));
+	sysCfg.sensor_temphum_enable = (len > 0) ? 1:0;
 
 
 	len=httpdFindArg(connData->post->buff, "thermostat1-input", buff, sizeof(buff));
@@ -823,11 +831,11 @@ void ICACHE_FLASH_ATTR tplSensorSettings(HttpdConnData *connData, char *token, v
 	os_strcpy(buff, "Unknown");
 
 	if (os_strcmp(token, "sensor-ds18b20-enable")==0) {
-			os_strcpy(buff, sysCfg.sensor_ds18b20_enable == 1 ? "checked" : "" );
+			os_strcpy(buff, sysCfg.sensor_temp_enable == 1 ? "checked" : "" );
 	}
 
 	if (os_strcmp(token, "sensor-dht22-enable")==0) {
-			os_strcpy(buff, sysCfg.sensor_dht22_enable == 1 ? "checked" : "" );
+			os_strcpy(buff, sysCfg.sensor_temphum_enable == 1 ? "checked" : "" );
 	}
 
 	if (os_strcmp(token, "selectedds18b20")==0) {
@@ -1077,7 +1085,7 @@ int ICACHE_FLASH_ATTR tplsi7020(HttpdConnData *connData, char *token, void **arg
 	httpdSend(connData, buff, -1);
 	return HTTPD_CGI_DONE;
 }
-
+#ifdef CONFIG_MLX91205
 int ICACHE_FLASH_ATTR
 cgimlx91205(HttpdConnData *connData)
 {
@@ -1108,4 +1116,4 @@ int ICACHE_FLASH_ATTR tplmlx91205(HttpdConnData *connData, char *token, void **a
 	httpdSend(connData, buff, -1);
 	return HTTPD_CGI_DONE;
 }
-
+#endif

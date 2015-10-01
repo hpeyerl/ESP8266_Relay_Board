@@ -110,13 +110,18 @@ uint8_t mqtt_devid[32];
 uint8_t mqtt_user[32];
 uint8_t mqtt_pass[64];
 uint32_t mqtt_use_ssl;
+uint32_t mqtt_deep_sleep_time;
 uint8_t mqtt_relay_subs_topic[64];
-uint8_t mqtt_dht22_temp_pub_topic[64];
-uint8_t mqtt_dht22_humi_pub_topic[64];
-uint8_t mqtt_ds18b20_temp_pub_topic[64];
+#if defined(CONFIG_DHT22) || defined(CONFIG_SI7020)
+uint8_t mqtt_temphum_temp_pub_topic[64];
+uint8_t mqtt_temphum_humi_pub_topic[64];
+uint32_t sensor_temphum_enable;
+#endif
+#if defined(CONFIG_MAX31855) || defined(CONFIG_DS18B20)
+uint8_t mqtt_temp_pub_topic[64];
+uint32_t sensor_temp_enable;
+#endif
 
-uint32_t sensor_ds18b20_enable;
-uint32_t sensor_dht22_enable;
 uint32_t thermostat1_input;
 
 uint32_t relay_latching_enable;
