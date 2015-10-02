@@ -236,8 +236,15 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 
 void ICACHE_FLASH_ATTR mqttPublishedCb(uint32_t *args)
 {
-//    MQTT_Client* client = (MQTT_Client*)args;
+    MQTT_Client* client = (MQTT_Client*)args;
+
     os_printf("MQTT: Published\r\n");
+
+    if (sysCfg.mqtt_deep_sleep_time != 0)
+		if(QUEUE_IsEmpty(&client->msgQueue) || client->sendTimeout != 0) {
+			os_printf("Going to sleep for %d seconds ... zzzzzz\n", sysCfg.mqtt_deep_sleep_time);
+			system_deep_sleep(sysCfg.mqtt_deep_sleep_time * 1000 * 1000);
+		}
 }
 
 #endif  // CONFIG_MQTT
