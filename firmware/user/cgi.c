@@ -464,6 +464,10 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 			os_sprintf(buff, "%d", (int)sysCfg.mqtt_keepalive);
 	}
 
+	if (os_strcmp(token, "mqtt-deep_sleep_time")==0) {
+			os_sprintf(buff, "%d", (int)sysCfg.mqtt_deep_sleep_time);
+	}
+
 	if (os_strcmp(token, "mqtt-devid")==0) {
 			os_strcpy(buff, (char *)sysCfg.mqtt_devid);
 	}
@@ -479,6 +483,8 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 	if (os_strcmp(token, "mqtt-relay-subs-topic")==0) {
 			os_strcpy(buff, (char *)sysCfg.mqtt_relay_subs_topic);
 	}
+
+	
 
 #if defined(CONFIG_SI7020) || defined(CONFIG_DHT22)
         if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM || sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
@@ -532,8 +538,43 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 	if (len>0) {
 		sysCfg.mqtt_keepalive=atoi(buff);
 	}
+
+	len=httpdFindArg(connData->post->buff, "mqtt-deep-sleep-time", buff, sizeof(buff));
+	if (len>0) {
+		sysCfg.mqtt_deep_sleep_time=atoi(buff);
+	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-devid", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-devid", buff, sizeof(buff));
+	if (len>0) {
+		os_sprintf((char *)sysCfg.mqtt_devid,buff);
+	}
+	
+		len=httpdFindArg(connData->post->buff, "mqtt-user", buff, sizeof(buff));
+	if (len>0) {
+		os_sprintf((char *)sysCfg.mqtt_user,buff);
+	}
+	
+		len=httpdFindArg(connData->post->buff, "mqtt-pass", buff, sizeof(buff));
+	if (len>0) {
+		os_sprintf((char *)sysCfg.mqtt_pass,buff);
+	}
+	
+		len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-topic", buff, sizeof(buff));
+	if (len>0) {
+		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic,buff);
+	}
+	
+		len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
+	if (len>0) {
+		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic,buff);
+	}
+	
+		len=httpdFindArg(connData->post->buff, "mqtt-temphum-humi-pub-topic", buff, sizeof(buff));
+	if (len>0) {
+		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic,buff);
+	}
+	
+	len=httpdFindArg(connData->post->buff, "mqtt-devid", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_devid,buff);
 	}
