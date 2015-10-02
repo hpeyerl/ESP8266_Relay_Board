@@ -81,6 +81,11 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 	if(sysCfg.mqtt_enable==1) {
 		//os_printf("Sending MQTT\n");
 		
+		if (mqttClient.connState != MQTT_DATA) {
+			os_printf("MQTT: Waiting to publish....\n");
+			return;		// Not ready to publish yet.
+		}
+
 		if(sysCfg.sensor_temphum_enable) {
 #ifdef CONFIG_DHT22
 			struct sensor_reading* result = readDHT();
@@ -148,15 +153,19 @@ void ICACHE_FLASH_ATTR broadcastd_init(void){
 
 #ifdef CONFIG_MQTT
 	if(sysCfg.mqtt_enable==1) {
-		os_printf("Arming MQTT broadcast timer\n");
+		int timeout = 60000;
+		if (sysCfg.mqtt_deep_sleep_time != 0)
+			timeout=1000;	// If we're coming out of deepsleep, then we want to broadcast right away.
+
+		os_printf("Arming MQTT broadcast timer for %d seconds\n", timeout/1000);  	
 		os_timer_setfn(&MQTTbroadcastTimer, MQTTbroadcastReading, NULL);
-		os_timer_arm(&MQTTbroadcastTimer, 60000, 1);
+		os_timer_arm(&MQTTbroadcastTimer, timeout, 1);
 	}
 #endif // CONFIG_MQTT
 	
 	if(sysCfg.broadcastd_enable==1) {
-		os_printf("Arming HTTP broadcast timer\n");  	
 		os_timer_setfn(&broadcastTimer, broadcastReading, NULL);
+		os_printf("Arming HTTP broadcast timer\n");  	
 		os_timer_arm(&broadcastTimer, 60000, 1);		
 	}
 }
