@@ -224,14 +224,11 @@ void spi_rx_byte_order(uint8 spi_no, uint8 byte_order){
 uint32 spi_transaction(uint8 spi_no, uint8 cmd_bits, uint16 cmd_data, uint32 addr_bits, uint32 addr_data, uint32 dout_bits, uint32 dout_data,
 				uint32 din_bits, uint32 dummy_bits){
 
-	os_printf("here\r\n");
 	if(spi_no > 1) return 0;  //Check for a valid SPI 
 
 	//code for custom Chip Select as GPIO PIN here
 
 	while(spi_busy(spi_no)); //wait for SPI to be ready	
-
-	os_printf("SPI %d is ready..\r\n", spi_no);
 
 //########## Enable SPI Functions ##########//
 	//disable MOSI, MISO, ADDR, COMMAND, DUMMY in case previously set.
@@ -258,14 +255,12 @@ uint32 spi_transaction(uint8 spi_no, uint8 cmd_bits, uint16 cmd_data, uint32 add
 		SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_USR_COMMAND); //enable COMMAND function in SPI module
 		uint16 command = cmd_data << (16-cmd_bits); //align command data to high bits
 		command = ((command>>8)&0xff) | ((command<<8)&0xff00); //swap byte order
-		os_printf("sending cmd_bits 0x%x %d\r\n", cmd_bits, command);
 		WRITE_PERI_REG(SPI_USER2(spi_no), ((((cmd_bits-1)&SPI_USR_COMMAND_BITLEN)<<SPI_USR_COMMAND_BITLEN_S) | (command&SPI_USR_COMMAND_VALUE)));	
 	}
 //########## END SECTION ##########//
 
 //########## Setup Address Data ##########//
 	if(addr_bits){
-		os_printf("sending addr_bits 0x%x %d\r\n", addr_bits, addr_data);
 		SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_USR_ADDR); //enable ADDRess function in SPI module
 		WRITE_PERI_REG(SPI_ADDR(spi_no), addr_data<<(32-addr_bits)); //align address data to high bits
 	}
@@ -277,14 +272,12 @@ uint32 spi_transaction(uint8 spi_no, uint8 cmd_bits, uint16 cmd_data, uint32 add
 	if(dout_bits) {
 		SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_USR_MOSI); //enable MOSI function in SPI module
 	//copy data to W0
-		os_printf("sending dout_bits %d 0x%x\r\n", dout_bits, dout_data);
 		if(READ_PERI_REG(SPI_USER(spi_no))&SPI_WR_BYTE_ORDER) {
 			WRITE_PERI_REG(SPI_W0(spi_no), dout_data<<(32-dout_bits));
 	} else {
 
 		uint8 dout_extra_bits = dout_bits%8;
 
-		os_printf("else sending dout_bits %d 0x%x\r\n", dout_bits, dout_data);
 		if(dout_extra_bits){
 			//if your data isn't a byte multiple (8/16/24/32 bits)and you don't have SPI_WR_BYTE_ORDER set, you need this to move the non-8bit remainder to the MSBs
 			//not sure if there's even a use case for this, but it's here if you need it...
