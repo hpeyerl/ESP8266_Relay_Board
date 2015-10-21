@@ -152,7 +152,7 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 void ICACHE_FLASH_ATTR broadcastd_init(void){
 
 #ifdef CONFIG_MQTT
-	if(sysCfg.mqtt_enable==1) {
+	if(sysCfg.mqtt_enable==1 && (sysCfg.sensor_temp_enable || sysCfg.sensor_temphum_enable)) {
 		int timeout = 60000;
 		if (sysCfg.mqtt_deep_sleep_time != 0)
 			timeout=1000;	// If we're coming out of deepsleep, then we want to broadcast right away.
