@@ -104,6 +104,7 @@ void ICACHE_FLASH_ATTR CFG_Load()
 		sysCfg.ntp_enable=NTP_ENABLE;
 		sysCfg.ntp_tz=NTP_TZ;
 
+		sysCfg.mqtt_deep_sleep_time = MQTT_DEEP_SLEEP_TIME;
 		sysCfg.mqtt_enable=MQTT_ENABLE;
 		os_sprintf((char *)sysCfg.mqtt_host, "%s", MQTT_HOST);
 		sysCfg.mqtt_port=MQTT_PORT;

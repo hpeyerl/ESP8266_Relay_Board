@@ -110,6 +110,7 @@ uint8_t mqtt_devid[32];
 uint8_t mqtt_user[32];
 uint8_t mqtt_pass[64];
 uint32_t mqtt_use_ssl;
+uint32_t mqtt_send_config;
 uint32_t mqtt_deep_sleep_time;
 uint8_t mqtt_relay_subs_topic[64];
 #if defined(CONFIG_DHT22) || defined(CONFIG_SI7020)
