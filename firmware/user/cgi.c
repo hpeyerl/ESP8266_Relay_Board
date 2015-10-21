@@ -25,6 +25,7 @@ Some random cgi routines.
 #include "ds18b20.h"
 #include "i2c_si7020.h"
 #include "spi_max31855.h"
+#include "spi_ws2812b.h"
 #include "sntp.h"
 #include "time_utils.h"
 #include "config.h"
@@ -162,9 +163,6 @@ int ICACHE_FLASH_ATTR cgiGPIO(HttpdConnData *connData) {
 	}
 }
 
-
-
-//Template code for the led page.
 void ICACHE_FLASH_ATTR tplGPIO(HttpdConnData *connData, char *token, void **arg) {
 	char buff[128];
 	if (token==NULL) return;
@@ -219,6 +217,74 @@ void ICACHE_FLASH_ATTR tplGPIO(HttpdConnData *connData, char *token, void **arg)
 	os_printf("\n ");
 
 	}
+	httpdSend(connData, buff, -1);
+}
+
+
+int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
+{
+	int len;
+	char buff[128];
+	int gotcmd=0;
+	uint8_t red=255, green=255, blue=255;
+	
+	os_printf("here in ws2812b cgi\n");
+	if (connData->conn==NULL) {
+		//Connection aborted. Clean up.
+		return HTTPD_CGI_DONE;
+	}
+
+	len=httpdFindArg(connData->getArgs, "red", buff, sizeof(buff));
+	if (len>0) {
+		red = atoi(buff);
+		os_printf("red is: %d\n", red);
+	}
+	len=httpdFindArg(connData->getArgs, "green", buff, sizeof(buff));
+	if (len>0) {
+		green = atoi(buff);
+		os_printf("green is: %d\n", green);
+	}
+	len=httpdFindArg(connData->getArgs, "blue", buff, sizeof(buff));
+	if (len>0) {
+		blue = atoi(buff);
+		os_printf("blue is: %d\n", blue);
+	}
+
+	len=httpdFindArg(connData->getArgs, "pattern1", buff, sizeof(buff));
+	if (len>0) {
+		gotcmd = 1;
+		os_printf("sending pattern1 %d %d %d\n", red, green, blue);
+		if (atoi(buff) == 1)
+			ws2812b_send_rgb(red, green, blue);
+		else
+			ws2812b_send_rgb(0, 0, 0);
+	}
+
+	os_printf("Sent...\n");
+	if(gotcmd==1) {
+		httpdRedirect(connData, "ws2812b.tpl");
+		return HTTPD_CGI_DONE;
+	} else {
+		httpdStartResponse(connData, 200);
+		httpdHeader(connData, "Content-Type", "text/json");
+		httpdHeader(connData, "Access-Control-Allow-Origin", "*");
+		httpdEndHeaders(connData);
+		len=os_sprintf(buff, "\"relay1\": %d\n,\"relay1name\":\"%s\"\n", 1, "foo");
+		httpdSend(connData, buff, -1);
+		return HTTPD_CGI_DONE;	
+	}
+}
+
+
+void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **arg)
+{
+	char buff[128];
+
+	os_printf("here in ws2812b tpl (%s)\n", token);
+	if (token == NULL) return;
+
+	os_strcpy(buff, "Ok");
+
 	httpdSend(connData, buff, -1);
 }
 
@@ -441,15 +507,29 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 	char buff[192];
 	if (token==NULL) return;
 	
-	os_strcpy(buff, "Unknown");
+	os_strcpy(buff, "");
 
 	
 	if (os_strcmp(token, "mqtt-enable")==0) {
 			os_sprintf(buff, "%d", (int)sysCfg.mqtt_enable);
 	}
+
+	if (os_strcmp(token, "mqtt-enabled")==0) {
+			if (sysCfg.mqtt_enable) 
+				os_sprintf(buff,"checked");
+	}
 	
 	if (os_strcmp(token, "mqtt-use-ssl")==0) {
 			os_sprintf(buff,"%d", (int)sysCfg.mqtt_use_ssl);
+	}
+
+	if (os_strcmp(token, "mqtt-send-config")==0) {
+			os_sprintf(buff,"%d", (int)sysCfg.mqtt_send_config);
+	}
+
+	if (os_strcmp(token, "mqtt-send-config-enabled")==0) {
+			if (sysCfg.mqtt_send_config)
+				os_sprintf(buff,"checked");
 	}
 
 	if (os_strcmp(token, "mqtt-host")==0) {
@@ -464,7 +544,7 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 			os_sprintf(buff, "%d", (int)sysCfg.mqtt_keepalive);
 	}
 
-	if (os_strcmp(token, "mqtt-deep_sleep_time")==0) {
+	if (os_strcmp(token, "mqtt-deep-sleep-time")==0) {
 			os_sprintf(buff, "%d", (int)sysCfg.mqtt_deep_sleep_time);
 	}
 
@@ -524,6 +604,9 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 	len=httpdFindArg(connData->post->buff, "mqtt-use-ssl", buff, sizeof(buff));
 	sysCfg.mqtt_use_ssl = (len > 0) ? 1:0;
 	
+	len=httpdFindArg(connData->post->buff, "mqtt-send-config", buff, sizeof(buff));
+	sysCfg.mqtt_send_config = (len > 0) ? 1:0;
+	
 	len=httpdFindArg(connData->post->buff, "mqtt-host", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_host,buff);
@@ -549,27 +632,27 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 		os_sprintf((char *)sysCfg.mqtt_devid,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-user", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-user", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_user,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-pass", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-pass", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_pass,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-temphum-humi-pub-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-temphum-humi-pub-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic,buff);
 	}
@@ -579,32 +662,32 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 		os_sprintf((char *)sysCfg.mqtt_devid,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-user", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-user", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_user,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-pass", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-pass", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_pass,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic,buff);
 	}
 	
-		len=httpdFindArg(connData->post->buff, "mqtt-temphum-humi-pub-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-temphum-humi-pub-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic,buff);
 	}
 
-		len=httpdFindArg(connData->post->buff, "mqtt-temp-pub-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-temp-pub-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_temp_pub_topic,buff);
 	}

@@ -36,5 +36,7 @@ int cgisi7020(HttpdConnData *connData);
 int tplsi7020(HttpdConnData *connData, char *token, void **arg);
 int cgimlx91205(HttpdConnData *connData);
 int tplmlx91205(HttpdConnData *connData, char *token, void **arg);
+int cgiws2812b(HttpdConnData *connData);
+void tplws2812b(HttpdConnData *connData, char *token, void **arg);
 
 #endif
