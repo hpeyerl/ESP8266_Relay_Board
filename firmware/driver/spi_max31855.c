@@ -28,7 +28,7 @@ static bool max31855_initialized = 0;
 /*
  * For SPI, dev is our SS
  */
-bool
+bool ICACHE_FLASH_ATTR
 max31855_init()
 {
 	spi_init_gpio(SPI_DEV, SPI_CLK_USE_DIV);
@@ -50,7 +50,7 @@ max31855_init()
 /*
  * Read either the kprobe or internal temperature
  */
-bool
+bool ICACHE_FLASH_ATTR
 max31855_read_temps(int16_t *kprobe, int16_t *internal)
 {
 	int16_t itemp=0;
@@ -149,7 +149,7 @@ max31855_read_temps(int16_t *kprobe, int16_t *internal)
 	return true;
 }
 
-uint16_t
+uint16_t ICACHE_FLASH_ATTR
 max31855_read_itemp()
 {
 	int16_t kprobe, internal;
@@ -162,7 +162,7 @@ max31855_read_itemp()
 		return 0xffff;	// MAX31855 reported an error.
 }
 
-uint16_t
+uint16_t ICACHE_FLASH_ATTR
 max31855_read_ktemp()
 {
 	int16_t kprobe, internal;
@@ -183,7 +183,7 @@ max31855_read_ktemp()
  */
 #define TOPIC_LEN 128
 
-static int 
+static int ICACHE_FLASH_ATTR
 do_max31855_pub_kprobe(int argc, const char* const* argv)
 {
 	MQTT_Client *client = mqttGetConnectedClient();
@@ -207,7 +207,7 @@ CONSOLE_CMD(max31855_pub_kprobe, 1, 1,
 		"Publish Thermocouple Temperature via MQTT"
 );
 
-static int 
+static int  ICACHE_FLASH_ATTR
 do_max31855_pub_internal(int argc, const char* const* argv)
 {
 	MQTT_Client *client = mqttGetConnectedClient();
