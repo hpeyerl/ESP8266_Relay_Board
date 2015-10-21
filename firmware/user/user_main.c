@@ -83,6 +83,10 @@ HttpdBuiltInUrl builtInUrls[]={
 	{"/control/ui.tpl", cgiEspFsTemplate, tplUI},
 	{"/control/relay.tpl", cgiEspFsTemplate, tplGPIO},
 	{"/control/relay.cgi", cgiGPIO, NULL},
+#ifdef CONFIG_WS2812B
+	{"/control/ws2812b.tpl", cgiEspFsTemplate, tplws2812b},
+	{"/control/ws2812b.cgi", cgiws2812b, NULL},
+#endif
 #ifdef CONFIG_DHT22
     {"/control/dht22.tpl", cgiEspFsTemplate, tplDHT},
     {"/control/dht22.cgi", cgiDHT22, NULL}, 
@@ -254,13 +258,12 @@ void ICACHE_FLASH_ATTR user_init(void) {
 
 	stdoutInit();	
 	os_delay_us(100000);
+	wifi_set_opmode(0x3); //reset to AP+STA mode
 
 	CFG_Load();
 	ioInit();
 	
-#if 1
 	WIFI_Connect(wifiConnectCb);
-#endif
 
 	httpdInit(builtInUrls, sysCfg.httpd_port);
 
@@ -289,6 +292,10 @@ void ICACHE_FLASH_ATTR user_init(void) {
 	if(sysCfg.sensor_ds18b20_enable) 
 		ds_init(30000);
 #endif // CONFIG_DS18B20
+
+#ifdef CONFIG_WS2812B
+	ws2812b_init();
+#endif // CONFIG_WS2812B
 
 	broadcastd_init();
 
