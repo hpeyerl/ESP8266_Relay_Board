@@ -8,6 +8,7 @@
 <h1>Main - Board ID: %board_id%</h1>
 <p>
 <ul>
+<li><a href="config/config.tpl">Device_ID</a>settings.</li>
 <li><a href="config/wifi/wifi.tpl">WiFi</a> settings.</li>
 %config_mqtt%
 <li><a href="config/httpd.tpl">HTTP Daemon</a> settings.</li>
