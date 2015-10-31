@@ -40,6 +40,7 @@ static const char *board_id_str[] = {
 	"Dual 16A Relay Phrob" ,
 	"Single 16A Relay Phrob" ,
 	"Signal Relay Phrob" ,
+	"WS2812 LED Phrob",
 };
 
 int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg) {
