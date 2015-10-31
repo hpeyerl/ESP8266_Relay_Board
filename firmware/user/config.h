@@ -114,6 +114,7 @@ uint32_t mqtt_use_ssl;
 uint32_t mqtt_send_config;
 uint32_t mqtt_deep_sleep_time;
 uint8_t mqtt_relay_subs_topic[64];
+uint8_t mqtt_relay_subs_pulse_topic[64]; // pulse time for relays. 
 #if defined(CONFIG_DHT22) || defined(CONFIG_SI7020)
 uint8_t mqtt_temphum_temp_pub_topic[64];
 uint8_t mqtt_temphum_humi_pub_topic[64];

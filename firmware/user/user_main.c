@@ -183,8 +183,10 @@ void ICACHE_FLASH_ATTR wifiConnectCb(uint8_t status)
 void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 {
 	MQTT_Client* client = (MQTT_Client*)args;
-	os_printf("MQTT: Connected\r\n");
+	os_printf("MQTT: Connected.  Subscribing to:\r\n");
+	os_printf("\t%s\r\n\t%s\r\n", sysCfg.mqtt_relay_subs_topic, sysCfg.mqtt_relay_subs_pulse_topic);
 	MQTT_Subscribe(client, (char *)sysCfg.mqtt_relay_subs_topic,0);
+	MQTT_Subscribe(client, (char *)sysCfg.mqtt_relay_subs_pulse_topic,0);
 }
 
 void ICACHE_FLASH_ATTR mqttDisconnectedCb(uint32_t *args)
@@ -215,6 +217,7 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 		
 		if(relayNum=='1') {
 			currGPIO12State=atoi(strData);
+			os_printf("set Relay 1 to %d\r\n", currGPIO12State);
 			ioGPIO(currGPIO12State,12);
 		}
 
@@ -258,10 +261,12 @@ void ICACHE_FLASH_ATTR user_init(void) {
 
 	stdoutInit();	
 	os_delay_us(100000);
-	wifi_set_opmode(0x3); //reset to AP+STA mode
+	//wifi_set_opmode(0x2); //reset to AP+STA mode
 
 	CFG_Load();
+	os_printf("Calling ioinit\r\n");
 	ioInit();
+	os_printf("back from ioinit\r\n");
 	
 	WIFI_Connect(wifiConnectCb);
 
