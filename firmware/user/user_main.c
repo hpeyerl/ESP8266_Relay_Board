@@ -184,9 +184,7 @@ void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 {
 	MQTT_Client* client = (MQTT_Client*)args;
 	os_printf("MQTT: Connected.  Subscribing to:\r\n");
-	os_printf("\t%s\r\n\t%s\r\n", sysCfg.mqtt_relay_subs_topic, sysCfg.mqtt_relay_subs_pulse_topic);
 	MQTT_Subscribe(client, (char *)sysCfg.mqtt_relay_subs_topic,0);
-	MQTT_Subscribe(client, (char *)sysCfg.mqtt_relay_subs_pulse_topic,0);
 }
 
 void ICACHE_FLASH_ATTR mqttDisconnectedCb(uint32_t *args)
@@ -194,10 +192,15 @@ void ICACHE_FLASH_ATTR mqttDisconnectedCb(uint32_t *args)
 //	MQTT_Client* client = (MQTT_Client*)args;
 	os_printf("MQTT: Disconnected\r\n");
 }
+
 void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t topic_len, const char *data, uint32_t lengh)
 {
 
+	char *saveptr, *arg;
 	char strTopic[topic_len + 1];
+	char relayNum;
+	int pulse=0;
+
 	os_memcpy(strTopic, topic, topic_len);
 	strTopic[topic_len] = '\0';
 
@@ -205,40 +208,70 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	os_memcpy(strData, data, lengh);
 	strData[lengh] = '\0';
 
-	char relayNum=strTopic[topic_len-1];
 	char strSubsTopic[strlen((char *)sysCfg.mqtt_relay_subs_topic)];
 	os_strcpy(strSubsTopic,(char *)sysCfg.mqtt_relay_subs_topic);
-	strSubsTopic[(strlen((char *)sysCfg.mqtt_relay_subs_topic)-1)]=relayNum;
+	saveptr = strchr(strSubsTopic, '#');
+	if (saveptr != NULL) {
+		*saveptr = 0;
+		saveptr++;
+	}	// Now we have the Subscribed topic without args as a string, and args at saveptr
 
-	os_printf("MQTT strSubsTopic: %s, strTopic: %s \r\n", strSubsTopic, strTopic);
+os_printf("strSubsTopic: %s strTopic: %s\n", strSubsTopic, strTopic);
 
-	if (os_strcmp(strSubsTopic,strTopic) == 0 ) {
-		os_printf("Relay %d is now: %s \r\n", relayNum-'0', strData);
-		
-		if(relayNum=='1') {
-			currGPIO12State=atoi(strData);
-			os_printf("set Relay 1 to %d\r\n", currGPIO12State);
+	if (os_strncmp(strSubsTopic, strTopic, strlen(strSubsTopic)) != 0)
+		return;
+
+	// We've received a message for our subscribed topic.  Lets parse the arg(s).
+
+	arg = &strTopic[strlen(strSubsTopic)];
+	os_printf("arg: %s\n", arg);
+	if ((saveptr = strchr(arg, '/')) != NULL) {
+		// more than one arg.  Probably supposed to pulse it.
+		*saveptr = 0;
+		saveptr++;
+		os_printf("saveptr: %s\n", saveptr);
+		pulse=atoi(saveptr);
+	}
+	relayNum = arg[0];
+
+	os_printf("Relay %d is now: %s \r\n", relayNum-'0', strData);
+	
+	if(relayNum=='1') {
+		currGPIO12State=atoi(strData);
+		ioGPIO(currGPIO12State,12);
+		if (pulse) {
+			os_delay_us(1000*pulse);
+			currGPIO12State = (currGPIO12State == 1 ? 0 : 1);
 			ioGPIO(currGPIO12State,12);
 		}
+	}
 
-		if(relayNum=='2') {
-			currGPIO13State=atoi(strData);
+	if(relayNum=='2') {
+		currGPIO13State=atoi(strData);
+		ioGPIO(currGPIO13State,13);
+		if (pulse) {
+			os_delay_us(1000*pulse);
+			currGPIO13State = (currGPIO13State == 1 ? 0 : 1);
 			ioGPIO(currGPIO13State,13);
 		}
+	}
 
-		if(relayNum=='3') {
-			currGPIO15State=atoi(strData);
+	if(relayNum=='3') {
+		currGPIO15State=atoi(strData);
+		ioGPIO(currGPIO15State,15);
+		if (pulse) {
+			os_delay_us(1000*pulse);
+			currGPIO15State = (currGPIO15State == 1 ? 0 : 1);
 			ioGPIO(currGPIO15State,15);
 		}
-		
-		if( sysCfg.relay_latching_enable) {		
-			sysCfg.relay_1_state=currGPIO12State;					
-			sysCfg.relay_2_state=currGPIO13State;
-			sysCfg.relay_3_state=currGPIO15State;
-			CFG_Save();
-		}	
 	}
-	os_printf("MQTT topic: %s, data: %s \r\n", strTopic, strData);
+	
+	if( sysCfg.relay_latching_enable) {		
+		sysCfg.relay_1_state=currGPIO12State;					
+		sysCfg.relay_2_state=currGPIO13State;
+		sysCfg.relay_3_state=currGPIO15State;
+		CFG_Save();
+	}	
 }
 
 void ICACHE_FLASH_ATTR mqttPublishedCb(uint32_t *args)
