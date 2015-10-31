@@ -28,6 +28,7 @@ BOARD_ID_PHROB_TILT		0x5
 BOARD_ID_PHROB_DUAL_RELAY	0x6
 BOARD_ID_PHROB_SINGLE_RELAY	0x7
 BOARD_ID_PHROB_SIGNAL_RELAY	0x8
+BOARD_ID_PHROB_WS2812B		0x9
 </pre>
 <form name="configform" action="config.cgi" method="post">
 
