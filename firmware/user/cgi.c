@@ -564,6 +564,10 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 			os_strcpy(buff, (char *)sysCfg.mqtt_relay_subs_topic);
 	}
 
+	if (os_strcmp(token, "mqtt-relay-subs-pulse-topic")==0) {
+			os_strcpy(buff, (char *)sysCfg.mqtt_relay_subs_pulse_topic);
+	}
+
 	
 
 #if defined(CONFIG_SI7020) || defined(CONFIG_DHT22)
@@ -672,9 +676,9 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 		os_sprintf((char *)sysCfg.mqtt_pass,buff);
 	}
 	
-	len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-topic", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-pulse-topic", buff, sizeof(buff));
 	if (len>0) {
-		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic,buff);
+		os_sprintf((char *)sysCfg.mqtt_relay_subs_pulse_topic,buff);
 	}
 	
 	len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
