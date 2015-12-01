@@ -80,6 +80,11 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 		os_strcpy(buff, "<li>    <a href=\"control/max31855.tpl\">MAX31855</a>.</li>");
 	}
 #endif
+#ifdef CONFIG_WS2812B
+	if (os_strcmp(token, "control_ws2812")==0 && sysCfg.board_id == BOARD_ID_PHROB_WS2812B) {
+		os_strcpy(buff, "<li>    <a href=\"control/ws2812b.tpl\">LEDs</a></li>");
+	}
+#endif
 	if (os_strcmp(token, "config_relays")==0
 		       	 && (sysCfg.board_id==BOARD_ID_PHROB_DUAL_RELAY
 			 || sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY
@@ -227,51 +232,48 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 	int len;
 	char buff[128];
 	int gotcmd=0;
-	uint8_t red=255, green=255, blue=255;
+	int repeat=0;
+	int p=0;
 	
 	os_printf("here in ws2812b cgi\n");
 	if (connData->conn==NULL) {
 		//Connection aborted. Clean up.
 		return HTTPD_CGI_DONE;
 	}
-
-	len=httpdFindArg(connData->getArgs, "red", buff, sizeof(buff));
+	len=httpdFindArg(connData->getArgs, "stringlen", buff, sizeof(buff));
 	if (len>0) {
-		red = atoi(buff);
-		os_printf("red is: %d\n", red);
+		pcfg.stringlen = atoi(buff);
+		gotcmd = 1;
 	}
-	len=httpdFindArg(connData->getArgs, "green", buff, sizeof(buff));
+	len=httpdFindArg(connData->getArgs, "ms_delay", buff, sizeof(buff));
 	if (len>0) {
-		green = atoi(buff);
-		os_printf("green is: %d\n", green);
-	}
-	len=httpdFindArg(connData->getArgs, "blue", buff, sizeof(buff));
-	if (len>0) {
-		blue = atoi(buff);
-		os_printf("blue is: %d\n", blue);
+		pcfg.ms_delay = atoi(buff);
+		gotcmd = 1;
 	}
 
-	len=httpdFindArg(connData->getArgs, "pattern1", buff, sizeof(buff));
+
+	len=httpdFindArg(connData->getArgs, "pattern", buff, sizeof(buff));
 	if (len>0) {
 		gotcmd = 1;
-		os_printf("sending pattern1 %d %d %d\n", red, green, blue);
-		if (atoi(buff) == 1)
-			ws2812b_send_rgb(red, green, blue);
+		p = atoi(buff);
+		if (p)
+			ws2812b_set_pattern(p, repeat, pcfg.ms_delay, pcfg.stringlen);
 		else
-			ws2812b_send_rgb(0, 0, 0);
+			ws2812b_set_pattern(0, repeat, pcfg.ms_delay, pcfg.stringlen);
 	}
-
-	os_printf("Sent...\n");
+	
 	if(gotcmd==1) {
 		httpdRedirect(connData, "ws2812b.tpl");
 		return HTTPD_CGI_DONE;
 	} else {
+#if 0
 		httpdStartResponse(connData, 200);
 		httpdHeader(connData, "Content-Type", "text/json");
 		httpdHeader(connData, "Access-Control-Allow-Origin", "*");
 		httpdEndHeaders(connData);
 		len=os_sprintf(buff, "\"relay1\": %d\n,\"relay1name\":\"%s\"\n", 1, "foo");
 		httpdSend(connData, buff, -1);
+#endif
 		return HTTPD_CGI_DONE;	
 	}
 }
@@ -279,12 +281,28 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 
 void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **arg)
 {
-	char buff[128];
+	char buff[512];
 
-	os_printf("here in ws2812b tpl (%s)\n", token);
 	if (token == NULL) return;
 
-	os_strcpy(buff, "Ok");
+	os_sprintf(buff, "Invalid");
+	
+	if (os_strcmp(token, "cur_delay") == 0) {
+		os_sprintf(buff, "%d", pcfg.ms_delay);
+	}
+
+	if (os_strcmp(token, "cur_stringlen") == 0) {
+		os_sprintf(buff, "%d", pcfg.stringlen);
+	}
+
+	if (os_strcmp(token, "pattern_select") == 0) {
+		os_sprintf(buff, 
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"1\" checked>\"All Off\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"2\">\"All White\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"3\">\"Flashing Primaries\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"4\">\"Christmas\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"5\">\"Fade Candy\"</td></tr>");
+	}
 
 	httpdSend(connData, buff, -1);
 }

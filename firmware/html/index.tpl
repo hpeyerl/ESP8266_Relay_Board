@@ -18,6 +18,7 @@
 %config_relays%
 <li><a href="control/thermostat.html">Thermostat</a> control page.</li>
 <li><a href="control/thingspeak.html">Thingspeak</a> report page.</li>
+%control_ws2812%
 %config_sensors%
 %config_dht22%
 %config_si7020%
