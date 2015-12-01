@@ -199,7 +199,7 @@ PatternTimerHandler(void *arg)
 
 	for (i=pcfg.cur++, j=0; j<pcfg.stringlen;  i=(i+1)%size, j++)
 		ws2812b_send_rgb(patterns[pcfg.pattern-1].rgb[i][0],patterns[pcfg.pattern-1].rgb[i][1],patterns[pcfg.pattern-1].rgb[i][2]);
-	if (pcfg.cur >= pcfg.stringlen)
+	if (pcfg.cur >= size)
 		pcfg.cur = 0;
 }
 
