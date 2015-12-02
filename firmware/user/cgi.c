@@ -301,7 +301,8 @@ void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **a
 			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"2\">\"All White\"</td></tr>"
 			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"3\">\"Flashing Primaries\"</td></tr>"
 			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"4\">\"Christmas\"</td></tr>"
-			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"5\">\"Fade Candy\"</td></tr>");
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"5\">\"Fade Candy\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"6\">\"Checkstop!\"</td></tr>");
 	}
 
 	httpdSend(connData, buff, -1);

@@ -45,7 +45,7 @@ static ETSTimer PatternTimer;
 static struct Pattern {
 	int size;
 	uint8_t rgb[24][3];
-} patterns[5] = {
+} patterns[6] = {
 	{
 		.size = 1,
 		.rgb = {
@@ -103,6 +103,13 @@ static struct Pattern {
 			{ 6, 7, 4 },
 			{ 1, 2, 1 },
 			{ 1, 2, 1 },
+		},
+	},
+	{
+		.size = 2,
+		.rgb = {
+			{ 0xff, 0x0, 0x0 },
+			{ 0x0, 0x0, 0xff },
 		},
 	},
 };
