@@ -38,10 +38,12 @@ function submit_input(element) {
   xhttp.send(params);
 }
 </script>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 <body onload="form_init()">
 <div id="main">
-<h1>WS2812B control page</h1>
+<h1>RGB LED control page</h1>
 <form>
 <table>
 <tr><td><input type="text" name="stringlen" id="stringlen" value="%cur_stringlen%" >String Length</td></tr>
