@@ -232,48 +232,50 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 	int len;
 	char buff[128];
 	int gotcmd=0;
-	int repeat=0;
 	int p=0;
 	
-	os_printf("here in ws2812b cgi\n");
+	os_printf("here in ws2812b cgi [%s]\n", connData->post->buff);
 	if (connData->conn==NULL) {
 		//Connection aborted. Clean up.
 		return HTTPD_CGI_DONE;
 	}
-	len=httpdFindArg(connData->getArgs, "stringlen", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "stringlen", buff, sizeof(buff));
 	if (len>0) {
-		pcfg.stringlen = atoi(buff);
+		ws2812b_set_stringlen(atoi(buff));
 		gotcmd = 1;
 	}
-	len=httpdFindArg(connData->getArgs, "ms_delay", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "ms_delay", buff, sizeof(buff));
 	if (len>0) {
-		pcfg.ms_delay = atoi(buff);
+		ws2812b_set_delay(atoi(buff));
 		gotcmd = 1;
 	}
 
+	len=httpdFindArg(connData->post->buff, "brightness", buff, sizeof(buff));
+	if (len>0) {
+		ws2812b_set_brightness(atoi(buff));
+		gotcmd = 1;
+	}
 
-	len=httpdFindArg(connData->getArgs, "pattern", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "pattern", buff, sizeof(buff));
 	if (len>0) {
 		gotcmd = 1;
 		p = atoi(buff);
 		if (p)
-			ws2812b_set_pattern(p, repeat, pcfg.ms_delay, pcfg.stringlen);
+			ws2812b_set_pattern(p);
 		else
-			ws2812b_set_pattern(0, repeat, pcfg.ms_delay, pcfg.stringlen);
+			ws2812b_set_pattern(0);
 	}
 	
 	if(gotcmd==1) {
 		httpdRedirect(connData, "ws2812b.tpl");
 		return HTTPD_CGI_DONE;
 	} else {
-#if 0
 		httpdStartResponse(connData, 200);
 		httpdHeader(connData, "Content-Type", "text/json");
 		httpdHeader(connData, "Access-Control-Allow-Origin", "*");
 		httpdEndHeaders(connData);
-		len=os_sprintf(buff, "\"relay1\": %d\n,\"relay1name\":\"%s\"\n", 1, "foo");
+		len=os_sprintf(buff, "ok");
 		httpdSend(connData, buff, -1);
-#endif
 		return HTTPD_CGI_DONE;	
 	}
 }
@@ -288,11 +290,15 @@ void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **a
 	os_sprintf(buff, "Invalid");
 	
 	if (os_strcmp(token, "cur_delay") == 0) {
-		os_sprintf(buff, "%d", pcfg.ms_delay);
+		os_sprintf(buff, "%d", ws2812b_get_delay());
+	}
+
+	if (os_strcmp(token, "cur_brightness") == 0) {
+		os_sprintf(buff, "%d", ws2812b_get_brightness());
 	}
 
 	if (os_strcmp(token, "cur_stringlen") == 0) {
-		os_sprintf(buff, "%d", pcfg.stringlen);
+		os_sprintf(buff, "%d", ws2812b_get_stringlen());
 	}
 
 	if (os_strcmp(token, "pattern_select") == 0) {

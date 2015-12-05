@@ -132,8 +132,9 @@ ws2812b_init(void)
 	SET_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_CS_SETUP|SPI_CS_HOLD);
 	CLEAR_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_FLASH_MODE);
 	initialized = 1;
-	pcfg.stringlen = 16;
+	pcfg.stringlen = 18;
 	pcfg.ms_delay = 500;
+	pcfg.brightness = 8;
 	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);
 	return true;
 }
@@ -178,36 +179,101 @@ ws2812b_send_rgb(uint8_t r, uint8_t g, uint8_t b)
 	ws2812b_send_color(b);
 }
 
+void ICACHE_FLASH_ATTR
+ws2812b_set_timer_delay()
+{
+	os_timer_disarm(&PatternTimer);
+	os_timer_arm(&PatternTimer, pcfg.ms_delay, 1);
+}
+
 void
 ICACHE_FLASH_ATTR
-ws2812b_set_pattern(uint8_t pattern, uint8_t repeat, uint16_t ms_delay, uint16_t stringlen)
+ws2812b_set_brightness(uint8_t brightness)
+{
+	pcfg.brightness = brightness;
+}
+
+uint8_t
+ICACHE_FLASH_ATTR
+ws2812b_get_brightness(void)
+{
+	return(pcfg.brightness);
+}
+
+void
+ICACHE_FLASH_ATTR
+ws2812b_set_stringlen(uint16_t stringlen)
+{
+	if (stringlen)
+		pcfg.stringlen = stringlen;
+	else
+		pcfg.stringlen = 18; /* start with something */
+}
+
+uint16_t
+ICACHE_FLASH_ATTR
+ws2812b_get_stringlen(void)
+{
+	return(pcfg.stringlen);
+}
+
+void
+ICACHE_FLASH_ATTR
+ws2812b_set_delay(uint16_t delay)
+{
+	pcfg.ms_delay = delay;
+	ws2812b_set_timer_delay();
+}
+
+uint16_t
+ICACHE_FLASH_ATTR
+ws2812b_get_delay(void)
+{
+	return(pcfg.ms_delay);
+}
+
+void
+ICACHE_FLASH_ATTR
+ws2812b_set_pattern(uint8_t pattern)
 {
 	if (!initialized)
 		return;
 	pcfg.pattern = pattern;
-	pcfg.repeat = repeat;
-	if (stringlen)
-		pcfg.stringlen = stringlen;
-	else
-		pcfg.stringlen = 16; /* start with something */
 	pcfg.cur = 0;
-	pcfg.ms_delay = ms_delay;
-	os_timer_disarm(&PatternTimer);
-	os_printf("Setting pattern: %d, repeat: %d, delay: %d stringlen: %d\n", pattern, repeat, ms_delay, stringlen);
-	if (pattern)	// 0 turns off pattern
-		os_timer_arm(&PatternTimer, pcfg.ms_delay, 1);
+	if (pattern)	// -1 turns off pattern
+		ws2812b_set_timer_delay();
 }
 
-void
+uint8_t
+ICACHE_FLASH_ATTR
+ws2812b_get_pattern(void)
+{
+	return(pcfg.brightness);
+}
+
+void __attribute__((optimize("O2")))
 PatternTimerHandler(void *arg)
 {
 	int i, j, size;
-	size = patterns[pcfg.pattern-1].size;
+	uint8_t r, g, b, p, x;
 
-	for (i=pcfg.cur++, j=0; j<pcfg.stringlen;  i=(i+1)%size, j++)
-		ws2812b_send_rgb(patterns[pcfg.pattern-1].rgb[i][0],patterns[pcfg.pattern-1].rgb[i][1],patterns[pcfg.pattern-1].rgb[i][2]);
-	if (pcfg.cur >= size)
+	p = pcfg.pattern-1;
+	size = patterns[p].size;
+	x = 8-pcfg.brightness;
+
+	// Where in the pattern are we
+	//                    How many RGB's to spit out
+	//                                       next pattern element
+	for (i=pcfg.cur, j=0; j<pcfg.stringlen;  i++, j++) {
+		i %= size;
+		r = patterns[p].rgb[i][0] >> x;
+		g = patterns[p].rgb[i][1] >> x;
+		b = patterns[p].rgb[i][2] >> x;
+		ws2812b_send_rgb(r,g,b);
+	}
+	if (++pcfg.cur >= size)
 		pcfg.cur = 0;
+
 }
 
 #endif
