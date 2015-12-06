@@ -594,9 +594,21 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 			os_strcpy(buff, (char *)sysCfg.mqtt_pass);
 	}
 
-	if (os_strcmp(token, "mqtt-relay-subs-topic")==0) {
-			os_strcpy(buff, (char *)sysCfg.mqtt_relay_subs_topic);
+	if (sysCfg.board_id==BOARD_ID_PHROB_DUAL_RELAY
+		|| sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY
+		|| sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY
+		|| sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		if (os_strcmp(token, "mqtt-relay-subs-topic")==0) {
+			os_sprintf(buff, "<tr><td>Relays subs topic:</td><td><input type=\"text\" name=\"mqtt-relay-subs-topic\" id=\"mqtt-relay-subs-topic\" value=\"%s\" </td></tr>", sysCfg.mqtt_relay_subs_topic);
+		}
 	}
+#if defined(CONFIG_WS2812B)
+	if (sysCfg.board_id==BOARD_ID_PHROB_WS2812B) {
+		if (os_strcmp(token, "mqtt-led-subs-topic")==0) {
+			os_sprintf(buff, "<tr><td>LED subs topic:</td><td><input type=\"text\" name=\"mqtt-led-subs-topic\" id=\"mqtt-led-subs-topic\" value=\"%s\"</td></tr>", sysCfg.mqtt_led_subs_topic);
+		}
+	}
+#endif
 
 #if defined(CONFIG_SI7020) || defined(CONFIG_DHT22)
         if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM || sysCfg.board_id == BOARD_ID_RELAY_BOARD) {

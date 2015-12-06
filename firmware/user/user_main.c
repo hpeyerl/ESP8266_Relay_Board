@@ -184,8 +184,21 @@ void ICACHE_FLASH_ATTR wifiConnectCb(uint8_t status)
 void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 {
 	MQTT_Client* client = (MQTT_Client*)args;
-	os_printf("MQTT: Connected.  Subscribing to:\r\n");
-	MQTT_Subscribe(client, (char *)sysCfg.mqtt_relay_subs_topic,0);
+
+	 if (sysCfg.board_id==BOARD_ID_PHROB_DUAL_RELAY
+		 || sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY
+		 || sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY
+		 || sysCfg.board_id == BOARD_ID_RELAY_BOARD)
+	{
+		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", sysCfg.mqtt_relay_subs_topic);
+		MQTT_Subscribe(client, (char *)sysCfg.mqtt_relay_subs_topic,0);
+	}
+
+	if (sysCfg.board_id==BOARD_ID_PHROB_WS2812B)
+	{
+		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", sysCfg.mqtt_led_subs_topic);
+		MQTT_Subscribe(client, (char *)sysCfg.mqtt_led_subs_topic,0);
+	}
 }
 
 void ICACHE_FLASH_ATTR mqttDisconnectedCb(uint32_t *args)

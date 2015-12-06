@@ -49,6 +49,7 @@
 #define MQTT_PASS			""
 #define MQTT_USE_SSL		0
 #define MQTT_RELAY_SUBS_TOPIC 		"esp_%08X/out/relay/#"
+#define MQTT_LED_SUBS_TOPIC 		"esp_%08X/out/led/#"
 #define MQTT_DEEP_SLEEP_TIME    0
 #ifdef CONFIG_DHT22
 #define MQTT_TEMPHUM_TEMP_PUB_TOPIC  	"esp_%08X/in/dht22/temperature" 

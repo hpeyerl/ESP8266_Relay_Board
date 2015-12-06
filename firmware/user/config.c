@@ -130,6 +130,12 @@ void ICACHE_FLASH_ATTR CFG_Load()
 		os_sprintf((char *)sysCfg.relay1name, "%s", RELAY1NAME);
 		os_sprintf((char *)sysCfg.relay2name, "%s", RELAY2NAME);
 		os_sprintf((char *)sysCfg.relay3name, "%s", RELAY3NAME);
+
+		os_sprintf((char *)sysCfg.mqtt_led_subs_topic, MQTT_LED_SUBS_TOPIC, system_get_chip_id());
+		sysCfg.ws2812b_pattern = 0;
+		sysCfg.ws2812b_delay = 500;
+		sysCfg.ws2812b_brightness = 8;
+		sysCfg.ws2812b_stringlen = 18;
 		
 		sysCfg.broadcastd_enable=BROADCASTD_ENABLE;
 		sysCfg.broadcastd_port=BROADCASTD_PORT;

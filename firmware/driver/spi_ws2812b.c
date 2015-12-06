@@ -132,10 +132,19 @@ ws2812b_init(void)
 	SET_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_CS_SETUP|SPI_CS_HOLD);
 	CLEAR_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_FLASH_MODE);
 	initialized = 1;
-	pcfg.stringlen = 18;
-	pcfg.ms_delay = 500;
-	pcfg.brightness = 8;
 	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);
+	if (sysCfg.ws2812b_pattern) {
+		ws2812b_set_stringlen(sysCfg.ws2812b_stringlen);
+		ws2812b_set_delay(sysCfg.ws2812b_delay);
+		ws2812b_set_brightness(sysCfg.ws2812b_brightness);
+		ws2812b_set_pattern(sysCfg.ws2812b_pattern);
+	}
+	else {
+		ws2812b_set_stringlen(18);
+		ws2812b_set_delay(500);
+		ws2812b_set_brightness(8);
+		ws2812b_set_pattern(0);
+	}
 	return true;
 }
 
@@ -184,6 +193,17 @@ ws2812b_set_timer_delay()
 {
 	os_timer_disarm(&PatternTimer);
 	os_timer_arm(&PatternTimer, pcfg.ms_delay, 1);
+}
+
+void
+ICACHE_FLASH_ATTR
+ws2812b_save_pcfg(void)
+{
+	sysCfg.ws2812b_pattern = ws2812b_get_pattern();
+	sysCfg.ws2812b_delay = ws2812b_get_delay();
+	sysCfg.ws2812b_brightness = ws2812b_get_brightness();
+	sysCfg.ws2812b_stringlen = ws2812b_get_stringlen();
+	CFG_Save();
 }
 
 void
@@ -242,6 +262,7 @@ ws2812b_set_pattern(uint8_t pattern)
 	pcfg.cur = 0;
 	if (pattern)	// -1 turns off pattern
 		ws2812b_set_timer_delay();
+	ws2812b_save_pcfg();
 }
 
 uint8_t

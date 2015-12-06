@@ -114,6 +114,7 @@ uint32_t mqtt_use_ssl;
 uint32_t mqtt_send_config;
 uint32_t mqtt_deep_sleep_time;
 uint8_t mqtt_relay_subs_topic[64];
+uint8_t mqtt_led_subs_topic[64];
 #if defined(CONFIG_DHT22) || defined(CONFIG_SI7020)
 uint8_t mqtt_temphum_temp_pub_topic[64];
 uint8_t mqtt_temphum_humi_pub_topic[64];
@@ -123,6 +124,11 @@ uint32_t sensor_temphum_enable;
 uint8_t mqtt_temp_pub_topic[64];
 uint32_t sensor_temp_enable;
 #endif
+
+uint8_t ws2812b_pattern;
+uint16_t ws2812b_delay;
+uint8_t ws2812b_brightness;
+uint16_t ws2812b_stringlen;
 
 uint32_t thermostat1_input;
 
