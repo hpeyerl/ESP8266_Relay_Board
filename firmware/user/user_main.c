@@ -29,6 +29,7 @@
 #include "wifi.h"
 #include "mqtt.h"
 #include "httpclient.h"
+#include "captdns.h"
 
 //#include "netbios.h"
 //#include "pwm.h"
@@ -297,10 +298,8 @@ void ICACHE_FLASH_ATTR user_init(void) {
 	//wifi_set_opmode(0x2); //reset to AP+STA mode
 
 	CFG_Load();
-	os_printf("Calling ioinit\r\n");
 	ioInit();
-	os_printf("back from ioinit\r\n");
-	
+	captdnsInit();
 	WIFI_Connect(wifiConnectCb);
 
 	httpdInit(builtInUrls, sysCfg.httpd_port);
