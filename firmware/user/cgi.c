@@ -58,10 +58,18 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 	}
 #endif
 #if defined(CONFIG_DHT22) || defined(CONFIG_SI7020) || defined(CONFIG_MAX31855)
-	if (os_strcmp(token, "config_sensors")==0) {
+	if ((os_strcmp(token, "config_sensors")==0) && (
+	    sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM ||
+	    sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE ||
+	    sysCfg.board_id == BOARD_ID_PHROB_HALL_EFFECT ||
+	    sysCfg.board_id == BOARD_ID_PHROB_WATER)) {
 		os_strcpy(buff, "<li>Sensor readings:</li><ul>");
 	}
-	if (os_strcmp(token, "config_sensors_end")==0) {
+	if ((os_strcmp(token, "config_sensors_end")==0) && (
+	    sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM ||
+	    sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE ||
+	    sysCfg.board_id == BOARD_ID_PHROB_HALL_EFFECT ||
+	    sysCfg.board_id == BOARD_ID_PHROB_WATER)) {
 		os_strcpy(buff, "</ul>");
 	}
 #endif

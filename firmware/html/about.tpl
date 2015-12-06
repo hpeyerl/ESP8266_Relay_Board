@@ -10,6 +10,9 @@
 Three channel WiFi relay/thermostat board <br/>
 (c) <a href="http://harizanov.com">Martin Harizanov</a> 2014-2015
 
+Heavily modified by:
+(c) <a href="http://www.beer.org/blog/">Herb Peyerl</a> 2014-2015
+
 </p>
 <p>Firmware version: %fwver%.</p>
 <p>%freeheap%</p>
