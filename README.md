@@ -7,6 +7,8 @@ The Three Channel WiFi Relay/Thermostat Board is a WiFi connected multi-purpose 
 
 ###Highlights
 
+- Captive DNS for AP mode.  All domain lookups return IP of ESP8266
+- Support Deep Sleep with MQTT (read sensor, publish then sleep)
 - Option for on-board power supply
 - Up to three high quality [10A relays]
 - Powered by the WiFi [ESP8266 SoC] module
@@ -19,9 +21,16 @@ The Three Channel WiFi Relay/Thermostat Board is a WiFi connected multi-purpose 
  - Manual relay control
 - Broadcast using HTTP GET to services like [ThingSpeak] and [emonCMS]
 - Integration with [ThingSpeak] for charting/analytics visualization
-- Temperature sensor support
+- Sensor support
  - DS18B20
  - DHT22
+ - MAX31855
+ - SI7020
+ - MLX91205
+- Controls
+ - Relays (1-3)
+ - WS2812B and patterns
+
 
 See more at the [Three Channel WiFi Relay/Thermostat Board WiKi]
 
