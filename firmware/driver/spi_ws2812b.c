@@ -271,6 +271,9 @@ ws2812b_get_pattern(void)
 	return(pcfg.pattern);
 }
 
+extern void ets_intr_lock();
+extern void ets_intr_unlock();
+
 void __attribute__((optimize("O2")))
 PatternTimerHandler(void *arg)
 {
@@ -284,6 +287,7 @@ PatternTimerHandler(void *arg)
 	// Where in the pattern are we
 	//                    How many RGB's to spit out
 	//                                       next pattern element
+	ets_intr_lock();
 	for (i=pcfg.cur, j=0; j<pcfg.stringlen;  i++, j++) {
 		i %= size;
 		r = patterns[p].rgb[i][0] >> x;
@@ -291,6 +295,8 @@ PatternTimerHandler(void *arg)
 		b = patterns[p].rgb[i][2] >> x;
 		ws2812b_send_rgb(r,g,b);
 	}
+	ets_intr_unlock();
+
 	if (++pcfg.cur >= size)
 		pcfg.cur = 0;
 
