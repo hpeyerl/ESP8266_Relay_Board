@@ -242,7 +242,6 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 	int gotcmd=0;
 	int p=0;
 	
-	os_printf("here in ws2812b cgi [%s]\n", connData->post->buff);
 	if (connData->conn==NULL) {
 		//Connection aborted. Clean up.
 		return HTTPD_CGI_DONE;
@@ -273,6 +272,12 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 		else
 			ws2812b_set_pattern(0);
 	}
+
+	len=httpdFindArg(connData->post->buff, "save", buff, sizeof(buff));
+	if (len>0) {
+		gotcmd = 1;
+		ws2812b_save_pcfg();
+	}
 	
 	if(gotcmd==1) {
 		httpdRedirect(connData, "ws2812b.tpl");
@@ -292,6 +297,7 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **arg)
 {
 	char buff[512];
+	int p;
 
 	if (token == NULL) return;
 
@@ -310,13 +316,21 @@ void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **a
 	}
 
 	if (os_strcmp(token, "pattern_select") == 0) {
+		p = ws2812b_get_pattern();
 		os_sprintf(buff, 
-			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"1\" checked>\"All Off\"</td></tr>"
-			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"2\">\"All White\"</td></tr>"
-			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"3\">\"Flashing Primaries\"</td></tr>"
-			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"4\">\"Christmas\"</td></tr>"
-			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"5\">\"Fade Candy\"</td></tr>"
-			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"6\">\"Checkstop!\"</td></tr>");
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"1\" %s>\"All Off\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"2\" %s>\"All White\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"3\" %s>\"Flashing Primaries\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"4\" %s>\"Christmas\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"5\" %s>\"Fade Candy\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"6\" %s>\"Checkstop!\"</td></tr>",
+			(p==1?"checked":""),
+			(p==2?"checked":""),
+			(p==3?"checked":""),
+			(p==4?"checked":""),
+			(p==5?"checked":""),
+			(p==6?"checked":"")
+			 );
 	}
 
 	httpdSend(connData, buff, -1);

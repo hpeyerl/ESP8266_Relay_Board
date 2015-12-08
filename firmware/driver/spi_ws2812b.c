@@ -260,16 +260,15 @@ ws2812b_set_pattern(uint8_t pattern)
 		return;
 	pcfg.pattern = pattern;
 	pcfg.cur = 0;
-	if (pattern)	// -1 turns off pattern
+	if (pattern)
 		ws2812b_set_timer_delay();
-	ws2812b_save_pcfg();
 }
 
 uint8_t
 ICACHE_FLASH_ATTR
 ws2812b_get_pattern(void)
 {
-	return(pcfg.brightness);
+	return(pcfg.pattern);
 }
 
 void __attribute__((optimize("O2")))

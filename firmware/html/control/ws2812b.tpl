@@ -6,7 +6,7 @@ function form_init() {
      for(var i =0; i < len; i++)
      {
           var formElement = allElements[i];
-          if(formElement.type=="range" || formElement.type=="text" || formElement.type=="radio")
+          if(formElement.type=="range" || formElement.type=="text" || formElement.type=="radio" || formElement.type=="submit")
           {
 		console.log("type: " + formElement.type + " name: " + formElement.name + " value: " + formElement.value + " id: " + formElement.id)
 		  formElement.onchange= function (e) {
@@ -50,6 +50,7 @@ function submit_input(element) {
 %pattern_select%
 <tr><td><input type="range" defaultValue="500" max="1002" min="1" step="50" name="ms_delay" id="ms_delay" value="%cur_delay%" >Pattern Delay (ms)</td></tr>
 <tr><td><input type="range" defaultValue="0" max="8" min="0" step="1" name="brightness" id="brightness" value="%cur_brightness%" >Brightness</td></tr>
+<tr><td><input type="submit" name="save" value="Save"></td></tr>
 </table>
 </form>
 <p>
