@@ -41,6 +41,7 @@ static const char *board_id_str[] = {
 	"Single 16A Relay Phrob" ,
 	"Signal Relay Phrob" ,
 	"WS2812 LED Phrob",
+	"DHT22 Temperature Humidity Phrob",
 };
 
 int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg) {
@@ -60,6 +61,7 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 #if defined(CONFIG_DHT22) || defined(CONFIG_SI7020) || defined(CONFIG_MAX31855)
 	if ((os_strcmp(token, "config_sensors")==0) && (
 	    sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM ||
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
 	    sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE ||
 	    sysCfg.board_id == BOARD_ID_PHROB_HALL_EFFECT ||
 	    sysCfg.board_id == BOARD_ID_PHROB_WATER)) {
@@ -67,6 +69,7 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 	}
 	if ((os_strcmp(token, "config_sensors_end")==0) && (
 	    sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM ||
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
 	    sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE ||
 	    sysCfg.board_id == BOARD_ID_PHROB_HALL_EFFECT ||
 	    sysCfg.board_id == BOARD_ID_PHROB_WATER)) {
@@ -74,7 +77,9 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 	}
 #endif
 #ifdef CONFIG_DHT22
-	if (os_strcmp(token, "config_dht22")==0 && sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+	if (os_strcmp(token, "config_dht22")==0 && (
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD )) {
 		os_strcpy(buff, "<li>    <a href=\"control/dht22.tpl\">DHT22</a></li>");
 	}
 #endif
@@ -625,7 +630,9 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 #endif
 
 #if defined(CONFIG_SI7020) || defined(CONFIG_DHT22)
-        if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM || sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+        if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM || 
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
 		if (os_strcmp(token, "config_temphum1")==0) {
 			os_sprintf(buff, "<tr><td>Temperature pub topic:</td><td><input type=\"text\" name=\"mqtt-temphum-temp-pub-topic\" id=\"mqtt-temphum-temp-pub-topic\" value=\"%s\">     </td></tr>", sysCfg.mqtt_temphum_temp_pub_topic);
 		}
@@ -973,6 +980,7 @@ int ICACHE_FLASH_ATTR cgiSensorSettings(HttpdConnData *connData) {
 		
 	len=httpdFindArg(connData->post->buff, "sensor-temp-humi-enable", buff, sizeof(buff));
 	sysCfg.sensor_temphum_enable = (len > 0) ? 1:0;
+	os_printf("temphum_enable is %d\n", sysCfg.sensor_temphum_enable);
 
 
 	len=httpdFindArg(connData->post->buff, "thermostat1-input", buff, sizeof(buff));
@@ -995,6 +1003,7 @@ int ICACHE_FLASH_ATTR cgiSensorSettings(HttpdConnData *connData) {
 		sysCfg.thermostat1hysteresislow=atoi(buff);
 	}
 	
+	os_printf("Saving CFG\n");
 	CFG_Save();
 	httpdRedirect(connData, "/");
 	return HTTPD_CGI_DONE;

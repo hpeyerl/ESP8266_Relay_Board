@@ -80,6 +80,7 @@ void ICACHE_FLASH_ATTR CFG_Load()
 					   (uint32 *)&sysCfg, sizeof(SYSCFG));
 	}
 	if(sysCfg.cfg_holder != CFG_HOLDER){
+		os_printf("invalid config - Using default config.\n");
 		os_memset(&sysCfg, 0x00, sizeof sysCfg);
 
 		sysCfg.cfg_holder = CFG_HOLDER;
@@ -95,6 +96,7 @@ void ICACHE_FLASH_ATTR CFG_Load()
 		os_sprintf((char *)sysCfg.ap_ip, "%s", AP_IP);
 		os_sprintf((char *)sysCfg.ap_mask, "%s", AP_MASK);
 		os_sprintf((char *)sysCfg.ap_gw, "%s", AP_GW);
+		//os_sprintf((char *)sysCfg.ap_bssid, "%s", AP_BSSID);
 
 		sysCfg.httpd_port=HTTPD_PORT;
 		sysCfg.httpd_auth=HTTPD_AUTH;
@@ -114,8 +116,15 @@ void ICACHE_FLASH_ATTR CFG_Load()
 		os_sprintf((char *)sysCfg.mqtt_pass, "%s", MQTT_PASS);
 		sysCfg.mqtt_use_ssl=MQTT_USE_SSL;
 		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic, MQTT_RELAY_SUBS_TOPIC, system_get_chip_id());
-		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic, MQTT_TEMPHUM_TEMP_PUB_TOPIC, system_get_chip_id()); 
-		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic, MQTT_TEMPHUM_HUMI_PUB_TOPIC, system_get_chip_id());		
+		if (sysCfg.board_id == BOARD_ID_RELAY_BOARD || 
+		    sysCfg.board_id == BOARD_ID_PHROB_DHT22) {
+		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic, MQTT_DHT22_TEMP_PUB_TOPIC, system_get_chip_id()); 
+		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic, MQTT_DHT22_HUMI_PUB_TOPIC, system_get_chip_id());		
+		}
+		else {
+		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic, MQTT_SI7020_TEMP_PUB_TOPIC, system_get_chip_id()); 
+		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic, MQTT_SI7020_HUMI_PUB_TOPIC, system_get_chip_id());		
+		}
 		os_sprintf((char *)sysCfg.mqtt_temp_pub_topic, MQTT_TEMP_PUB_TOPIC, system_get_chip_id());
 
 		sysCfg.sensor_temp_enable=SENSOR_TEMP_ENABLE;

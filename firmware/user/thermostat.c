@@ -70,7 +70,7 @@ static  void ICACHE_FLASH_ATTR pollThermostatCb(void * arg)
 		
 		long Treading=-9999;
 		
-		if(sysCfg.sensor_dht22_enable) { 
+		if(sysCfg.sensor_temphum_enable) { 
 			struct sensor_reading* result = readDHT();
 			if(result->success) {
 				Treading=result->temperature*100;
@@ -78,7 +78,7 @@ static  void ICACHE_FLASH_ATTR pollThermostatCb(void * arg)
 					Treading=result->humidity*100;
 			}			
 		}
-		else { if(sysCfg.sensor_ds18b20_enable && sysCfg.thermostat1_input==0 ) { 
+		else { if(sysCfg.sensor_temp_enable && sysCfg.thermostat1_input==0 ) { 
 			struct sensor_reading* result = read_ds18b20();
 			if(result->success) {
 			    int SignBit, Whole, Fract;

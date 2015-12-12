@@ -43,6 +43,7 @@ SI7020_Init()
 	uint8_t offset;
 	uint8_t len;
 #endif
+	os_printf("Initializing SI7020..\n");
 	i2c_master_gpio_init(5, 2);	// hardcoded ickiness!
 
 	if (i2c_master_writeBytes1(SI7020_ADDRESS, SI7020_RESET))

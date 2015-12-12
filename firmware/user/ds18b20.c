@@ -312,6 +312,7 @@ static uint8_t LastDeviceFlag;
 
 void ICACHE_FLASH_ATTR ds_init(uint32_t polltime)
 {
+	os_printf(__FUNCTION__);
 	//set gpio2 as gpio pin
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
 	  
