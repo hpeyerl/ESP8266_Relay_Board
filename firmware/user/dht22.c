@@ -27,7 +27,7 @@
 #define DHT_MAXCOUNT 32000
 #define BREAKTIME 32
   
-#define DHT_PIN 0
+#define DHT_PIN 4
 
 enum sensor_type SENSOR;
 
@@ -89,8 +89,11 @@ struct sensor_reading * ICACHE_FLASH_ATTR readDHT(void) {
     return &reading;
 }
 
-#define DEBUG_DHT 0
+#define DEBUG_DHT 1
     
+extern void ets_intr_lock();
+extern void ets_intr_unlock();
+
 static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
 
   int counter = 0;
@@ -122,7 +125,7 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
   // PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
 
 #ifdef DEBUG_DHT
-  os_printf("Waiting for gpio2 to drop \n");
+  os_printf("Waiting for gpio%d to drop \n", DHT_PIN);
 #endif
 
   // wait for pin to drop?
@@ -137,6 +140,7 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
   os_printf("Reading DHT\n");
 #endif
 
+  //ets_intr_lock();
   // read data!
   for (i = 0; i < MAXTIMINGS; i++) {
     // Count high time (in approx us)
@@ -165,6 +169,7 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
       bits_in++;
     }
   }
+ // ets_intr_unlock();
 
   if (bits_in < 40) {
     os_printf("Got too few bits: %d should be at least 40", bits_in);
@@ -221,9 +226,9 @@ int ICACHE_FLASH_ATTR dht_humi_str(char *buff) {
 
 void ICACHE_FLASH_ATTR DHTInit(enum sensor_type sensor_type, uint32_t polltime) {
   SENSOR = sensor_type;
-  // Set GPIO2 to output mode for DHT22
-  PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
-  PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO0_U);
+  // Set GPIO4 to output mode for DHT22
+  PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4);
+  PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO4_U);
   
   pollDHTCb(NULL);
   

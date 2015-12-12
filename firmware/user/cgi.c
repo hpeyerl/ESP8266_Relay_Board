@@ -980,8 +980,6 @@ int ICACHE_FLASH_ATTR cgiSensorSettings(HttpdConnData *connData) {
 		
 	len=httpdFindArg(connData->post->buff, "sensor-temp-humi-enable", buff, sizeof(buff));
 	sysCfg.sensor_temphum_enable = (len > 0) ? 1:0;
-	os_printf("temphum_enable is %d\n", sysCfg.sensor_temphum_enable);
-
 
 	len=httpdFindArg(connData->post->buff, "thermostat1-input", buff, sizeof(buff));
 	if (len>0) {
