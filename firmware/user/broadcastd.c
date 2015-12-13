@@ -78,6 +78,8 @@ static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 
 #ifdef CONFIG_MQTT
 static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
+
+	char topic[128];
 	if(sysCfg.mqtt_enable==1) {
 		//os_printf("Sending MQTT\n");
 		
@@ -92,7 +94,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 
 			if(result->success) {
 				char temp[32];
-				char topic[128];
 				int len;
 				
 				dht_temp_str(temp);
@@ -111,7 +112,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 #endif
 #ifdef CONFIG_SI7020
 			char buf[32];
-			char topic[128];
 			int len;
 			os_sprintf(topic,"%s/%s",sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
 			len = os_sprintf(buf, "%d",SI7020_GetTemperature());
@@ -128,7 +128,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 			struct sensor_reading* result = read_ds18b20();
 			if(result->success) {
 				char temp[32];
-				char topic[128];
 				int len;
 				ds_str(temp,0);
 				len = os_strlen(temp);
@@ -140,7 +139,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 #endif
 #ifdef CONFIG_MAX31855
 			char buf[32];
-			char topic[128];
 			int len;
 			os_sprintf(topic,"%s/%s",sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
 			len = os_sprintf(buf, "%d",max31855_read_ktemp());
@@ -148,6 +146,29 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 			go_to_sleep++;
 #endif
 		}
+
+/*
+ * Publish the state of each relay.  Need to create Relay GPIO accessors (getRelayNstate())
+ * Also create an MQTT config publisher for these also.
+ */
+#ifdef NOTYET
+	if (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
+	    sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY ||
+	    sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY ||
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		os_sprintf(topic, "%s/%s/#", sysCfg.mqtt_devid, sysCfg.relay1name);
+		MQTT_Publish(&mqttClient, topic, getRelay1state(), len, 0 );
+	}
+	if (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		os_sprintf(topic, "%s/%s/#", sysCfg.mqtt_devid, sysCfg.relay2name);
+		MQTT_Publish(&mqttClient, topic, getRelay2state(), len, 0 );
+	}
+	if (sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		os_sprintf(topic, "%s/%s/#", sysCfg.mqtt_devid, sysCfg.relay3name);
+		MQTT_Publish(&mqttClient, topic, getRelay3state(), len, 0 );
+	}
+#endif // NOTYET
     }
 }
 
