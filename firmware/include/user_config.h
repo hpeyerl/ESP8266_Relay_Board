@@ -17,8 +17,8 @@
 #define STA_IP       "192.168.1.17"
 #define STA_MASK     "255.255.255.0"
 #define STA_GW       "192.168.1.1"
-#define STA_SSID     "" 
-#define STA_PASS     ""
+#define STA_SSID     "DebtRidge" 
+#define STA_PASS     "deadbeef"
 #define STA_TYPE AUTH_WPA2_PSK
 
 #define AP_IP        "192.168.4.1"
