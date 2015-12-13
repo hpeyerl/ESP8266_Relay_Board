@@ -58,6 +58,8 @@ sd('mqtt-temp-pub-topic',v);
 %config_temphum1%
 %config_temphum2%
 %config_temp%
+%config_relaysubs%
+%config_ledsubs%
 <tr><td><button type="button" onClick="parent.location='/'">Back</button><input type="submit" name="save" value="Save"></td></tr>
 </table>
 </form>

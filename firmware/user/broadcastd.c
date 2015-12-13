@@ -48,7 +48,7 @@ static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 	os_sprintf(buf2,"http://%s:%d/%s",sysCfg.broadcastd_host,(int)sysCfg.broadcastd_port,sysCfg.broadcastd_url);
 	
 #ifdef CONFIG_DHT22
-	if(sysCfg.sensor_dht22_enable)  {
+	if(sysCfg.sensor_temphum_enable)  {
 		dht_temp_str(t2);
 		dht_humi_str(t3);
 		os_sprintf(buf,buf2,currGPIO12State,currGPIO13State,currGPIO15State,"N/A",t2,t3);

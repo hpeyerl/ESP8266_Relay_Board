@@ -27,7 +27,7 @@
 #define DHT_MAXCOUNT 32000
 #define BREAKTIME 32
   
-#define DHT_PIN 2
+#define DHT_PIN 4
 
 enum sensor_type SENSOR;
 
@@ -88,7 +88,12 @@ LICENSE:
 struct sensor_reading * ICACHE_FLASH_ATTR readDHT(void) { 
     return &reading;
 }
+
+#define DEBUG_DHT 1
     
+extern void ets_intr_lock();
+extern void ets_intr_unlock();
+
 static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
 
   int counter = 0;
@@ -108,9 +113,9 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
 
   // Hold low for 20ms
   GPIO_OUTPUT_SET(DHT_PIN, 0);
-  delay_ms(20);
+  delay_ms(5);
 
-  // High for 40ms
+  // High for 40us
   // GPIO_OUTPUT_SET(2, 1);
 
   GPIO_DIS_OUTPUT(DHT_PIN);
@@ -119,7 +124,9 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
   // Set pin to input with pullup
   // PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
 
-  // os_printf("Waiting for gpio2 to drop \n");
+#ifdef DEBUG_DHT
+  os_printf("Waiting for gpio%d to drop \n", DHT_PIN);
+#endif
 
   // wait for pin to drop?
   while (GPIO_INPUT_GET(DHT_PIN) == 1 && i < DHT_MAXCOUNT) {
@@ -129,8 +136,11 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
     i++;
   }
 
-//  os_printf("Reading DHT\n");
+#ifdef DEBUG_DHT
+  os_printf("Reading DHT\n");
+#endif
 
+  //ets_intr_lock();
   // read data!
   for (i = 0; i < MAXTIMINGS; i++) {
     // Count high time (in approx us)
@@ -159,6 +169,7 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
       bits_in++;
     }
   }
+ // ets_intr_unlock();
 
   if (bits_in < 40) {
     os_printf("Got too few bits: %d should be at least 40", bits_in);
@@ -168,7 +179,9 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
 
   int checksum = (data[0] + data[1] + data[2] + data[3]) & 0xFF;
   
-  //os_printf("DHT: %02x %02x %02x %02x [%02x] CS: %02x\n", data[0], data[1],data[2],data[3],data[4],checksum);
+#ifdef DEBUG_DHT
+  os_printf("DHT: %02x %02x %02x %02x [%02x] CS: %02x\n", data[0], data[1],data[2],data[3],data[4],checksum);
+#endif
   
   if (data[4] != checksum) {
     os_printf("Checksum was incorrect after %d bits. Expected %d but got %d",
@@ -178,7 +191,9 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
 
   reading.temperature = scale_temperature(data);
   reading.humidity = scale_humidity(data);
-  //os_printf("Temp =  %d*C, Hum = %d%%\n", (int)(reading.temperature * 100), (int)(reading.humidity * 100));
+#ifdef DEBUG_DHT
+  os_printf("Temp =  %d*C, Hum = %d%%\n", (int)(reading.temperature * 100), (int)(reading.humidity * 100));
+#endif
   
   reading.success = 1;
   return;
@@ -211,9 +226,9 @@ int ICACHE_FLASH_ATTR dht_humi_str(char *buff) {
 
 void ICACHE_FLASH_ATTR DHTInit(enum sensor_type sensor_type, uint32_t polltime) {
   SENSOR = sensor_type;
-  // Set GPIO2 to output mode for DHT22
-  PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
-  PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
+  // Set GPIO4 to output mode for DHT22
+  PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4);
+  PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO4_U);
   
   pollDHTCb(NULL);
   

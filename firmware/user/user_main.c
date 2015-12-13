@@ -30,6 +30,8 @@
 #include "mqtt.h"
 #include "httpclient.h"
 #include "config.h"
+#include "captdns.h"
+#include "spi_ws2812b.h"
 
 //#include "netbios.h"
 //#include "pwm.h"
@@ -206,6 +208,12 @@ void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", topic);
 		MQTT_Subscribe(client, topic, -1);
 	}
+	if (sysCfg.board_id==BOARD_ID_PHROB_WS2812B)
+	{
+		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", sysCfg.mqtt_led_subs_topic);
+		MQTT_Subscribe(client, (char *)sysCfg.mqtt_led_subs_topic,0);
+	}
+
 	mqtt_config_publish();	// send our config record(s).
 }
 
@@ -408,18 +416,26 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 }
 #endif  // CONFIG_MQTT
 
+void ap_config()
+{
+	struct softap_config wiconfig;
+
+	if (sysCfg.ap_bssid[0] != 0 && wifi_softap_get_config(&wiconfig)) {
+		os_sprintf((char *)wiconfig.ssid, "%s", sysCfg.ap_bssid);
+	}
+
+}
+
 //Main routine
 void ICACHE_FLASH_ATTR user_init(void) {
 
 	stdoutInit();	
 	os_delay_us(100000);
-	//wifi_set_opmode(0x2); //reset to AP+STA mode
+	wifi_set_opmode(0x2); //reset to AP+STA mode
 
 	CFG_Load();
-	os_printf("Calling ioinit\r\n");
 	ioInit();
-	os_printf("back from ioinit\r\n");
-	
+	captdnsInit();
 	WIFI_Connect(wifiConnectCb);
 
 	httpdInit(builtInUrls, sysCfg.httpd_port);
@@ -441,19 +457,23 @@ void ICACHE_FLASH_ATTR user_init(void) {
 #endif // CONFIG_MQTT
 	
 #ifdef CONFIG_DHT22
-	if(sysCfg.sensor_dht22_enable)  {
+	if(sysCfg.sensor_temphum_enable && (
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD || 
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22) )
 		DHTInit(SENSOR_DHT22, 30000);
 	}
 #endif // CONFIG_DHT22
 		
 #ifdef CONFIG_DS18B20
-	if(sysCfg.sensor_ds18b20_enable) {
+	if (sysCfg.sensor_temp_enable &&
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD )
 		ds_init(30000);
 	}
 #endif
 
 #ifdef CONFIG_WS2812B
-	ws2812b_init();
+	if (sysCfg.board_id == BOARD_ID_PHROB_WS2812B)
+		ws2812b_init();
 #endif // CONFIG_WS2812B
 
 	broadcastd_init();
@@ -462,6 +482,8 @@ void ICACHE_FLASH_ATTR user_init(void) {
 	thermostat_init(30000);
 #endif // CONFIG_THERMOSTAT
 
+	// setup AP mode
+	//ap_config();
 #ifdef CONFIG_NETBIOS
 	//Netbios to set the name
 	struct softap_config wiconfig;

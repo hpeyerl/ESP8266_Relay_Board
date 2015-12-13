@@ -57,16 +57,17 @@ daySchedule weekSched[7]; // 7 days per week
 /*
  * Board ID is used in ioInit to configure I's and O's
  */
-#define BOARD_ID_RELAY_BOARD		0x0
-#define BOARD_ID_PHROB_THERMOCOUPLE	0x1
-#define BOARD_ID_PHROB_TEMP_HUM		0x2
-#define BOARD_ID_PHROB_HALL_EFFECT	0x3
-#define BOARD_ID_PHROB_WATER		0x4
-#define BOARD_ID_PHROB_TILT		0x5
-#define BOARD_ID_PHROB_DUAL_RELAY	0x6
-#define BOARD_ID_PHROB_SINGLE_RELAY	0x7
-#define BOARD_ID_PHROB_SIGNAL_RELAY	0x8
-#define BOARD_ID_PHROB_WS2812B		0x9
+#define BOARD_ID_RELAY_BOARD		0
+#define BOARD_ID_PHROB_THERMOCOUPLE	1
+#define BOARD_ID_PHROB_TEMP_HUM		2
+#define BOARD_ID_PHROB_HALL_EFFECT	3
+#define BOARD_ID_PHROB_WATER		4
+#define BOARD_ID_PHROB_TILT		5
+#define BOARD_ID_PHROB_DUAL_RELAY	6
+#define BOARD_ID_PHROB_SINGLE_RELAY	7
+#define BOARD_ID_PHROB_SIGNAL_RELAY	8
+#define BOARD_ID_PHROB_WS2812B		9
+#define BOARD_ID_PHROB_DHT22		10
 /*
  */
 
@@ -114,6 +115,7 @@ uint32_t mqtt_use_ssl;
 uint32_t mqtt_send_config;
 uint32_t mqtt_deep_sleep_time;
 uint8_t mqtt_relay_subs_topic[64];
+uint8_t mqtt_led_subs_topic[64];
 #if defined(CONFIG_DHT22) || defined(CONFIG_SI7020)
 uint8_t mqtt_temphum_temp_pub_topic[64];
 uint8_t mqtt_temphum_humi_pub_topic[64];
@@ -123,6 +125,11 @@ uint32_t sensor_temphum_enable;
 uint8_t mqtt_temp_pub_topic[64];
 uint32_t sensor_temp_enable;
 #endif
+
+uint8_t ws2812b_pattern;
+uint16_t ws2812b_delay;
+uint8_t ws2812b_brightness;
+uint16_t ws2812b_stringlen;
 
 uint32_t thermostat1_input;
 
@@ -157,6 +164,9 @@ uint32_t thermostat3opmode;
 uint32_t thermostat3hysteresishigh;
 uint32_t thermostat3hysteresislow;
 weekSchedule thermostat3schedule;
+//
+// New stuff gets added to the end...
+uint8_t ap_bssid[32];
 
 	
 } SYSCFG;

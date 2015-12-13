@@ -41,6 +41,7 @@ static const char *board_id_str[] = {
 	"Single 16A Relay Phrob" ,
 	"Signal Relay Phrob" ,
 	"WS2812 LED Phrob",
+	"DHT22 Temperature Humidity Phrob",
 };
 
 int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg) {
@@ -58,15 +59,27 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 	}
 #endif
 #if defined(CONFIG_DHT22) || defined(CONFIG_SI7020) || defined(CONFIG_MAX31855)
-	if (os_strcmp(token, "config_sensors")==0) {
+	if ((os_strcmp(token, "config_sensors")==0) && (
+	    sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM ||
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
+	    sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE ||
+	    sysCfg.board_id == BOARD_ID_PHROB_HALL_EFFECT ||
+	    sysCfg.board_id == BOARD_ID_PHROB_WATER)) {
 		os_strcpy(buff, "<li>Sensor readings:</li><ul>");
 	}
-	if (os_strcmp(token, "config_sensors_end")==0) {
+	if ((os_strcmp(token, "config_sensors_end")==0) && (
+	    sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM ||
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
+	    sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE ||
+	    sysCfg.board_id == BOARD_ID_PHROB_HALL_EFFECT ||
+	    sysCfg.board_id == BOARD_ID_PHROB_WATER)) {
 		os_strcpy(buff, "</ul>");
 	}
 #endif
 #ifdef CONFIG_DHT22
-	if (os_strcmp(token, "config_dht22")==0 && sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+	if (os_strcmp(token, "config_dht22")==0 && (
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD )) {
 		os_strcpy(buff, "<li>    <a href=\"control/dht22.tpl\">DHT22</a></li>");
 	}
 #endif
@@ -78,6 +91,11 @@ int ICACHE_FLASH_ATTR tplIndex(HttpdConnData *connData, char *token, void **arg)
 #ifdef CONFIG_MAX31855
 	if ((os_strcmp(token, "config_max31855")==0) && (sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE)) {
 		os_strcpy(buff, "<li>    <a href=\"control/max31855.tpl\">MAX31855</a>.</li>");
+	}
+#endif
+#ifdef CONFIG_WS2812B
+	if (os_strcmp(token, "control_ws2812")==0 && sysCfg.board_id == BOARD_ID_PHROB_WS2812B) {
+		os_strcpy(buff, "<li>    <a href=\"control/ws2812b.tpl\">LEDs</a></li>");
 	}
 #endif
 	if (os_strcmp(token, "config_relays")==0
@@ -227,41 +245,45 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 	int len;
 	char buff[128];
 	int gotcmd=0;
-	uint8_t red=255, green=255, blue=255;
+	int p=0;
 	
-	os_printf("here in ws2812b cgi\n");
 	if (connData->conn==NULL) {
 		//Connection aborted. Clean up.
 		return HTTPD_CGI_DONE;
 	}
-
-	len=httpdFindArg(connData->getArgs, "red", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "stringlen", buff, sizeof(buff));
 	if (len>0) {
-		red = atoi(buff);
-		os_printf("red is: %d\n", red);
+		ws2812b_set_stringlen(atoi(buff));
+		gotcmd = 1;
 	}
-	len=httpdFindArg(connData->getArgs, "green", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "ms_delay", buff, sizeof(buff));
 	if (len>0) {
-		green = atoi(buff);
-		os_printf("green is: %d\n", green);
-	}
-	len=httpdFindArg(connData->getArgs, "blue", buff, sizeof(buff));
-	if (len>0) {
-		blue = atoi(buff);
-		os_printf("blue is: %d\n", blue);
+		ws2812b_set_delay(atoi(buff));
+		gotcmd = 1;
 	}
 
-	len=httpdFindArg(connData->getArgs, "pattern1", buff, sizeof(buff));
+	len=httpdFindArg(connData->post->buff, "brightness", buff, sizeof(buff));
+	if (len>0) {
+		ws2812b_set_brightness(atoi(buff));
+		gotcmd = 1;
+	}
+
+	len=httpdFindArg(connData->post->buff, "pattern", buff, sizeof(buff));
 	if (len>0) {
 		gotcmd = 1;
-		os_printf("sending pattern1 %d %d %d\n", red, green, blue);
-		if (atoi(buff) == 1)
-			ws2812b_send_rgb(red, green, blue);
+		p = atoi(buff);
+		if (p)
+			ws2812b_set_pattern(p);
 		else
-			ws2812b_send_rgb(0, 0, 0);
+			ws2812b_set_pattern(0);
 	}
 
-	os_printf("Sent...\n");
+	len=httpdFindArg(connData->post->buff, "save", buff, sizeof(buff));
+	if (len>0) {
+		gotcmd = 1;
+		ws2812b_save_pcfg();
+	}
+	
 	if(gotcmd==1) {
 		httpdRedirect(connData, "ws2812b.tpl");
 		return HTTPD_CGI_DONE;
@@ -270,7 +292,7 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 		httpdHeader(connData, "Content-Type", "text/json");
 		httpdHeader(connData, "Access-Control-Allow-Origin", "*");
 		httpdEndHeaders(connData);
-		len=os_sprintf(buff, "\"relay1\": %d\n,\"relay1name\":\"%s\"\n", 1, "foo");
+		len=os_sprintf(buff, "ok");
 		httpdSend(connData, buff, -1);
 		return HTTPD_CGI_DONE;	
 	}
@@ -279,12 +301,42 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 
 void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **arg)
 {
-	char buff[128];
+	char buff[512];
+	int p;
 
-	os_printf("here in ws2812b tpl (%s)\n", token);
 	if (token == NULL) return;
 
-	os_strcpy(buff, "Ok");
+	os_sprintf(buff, "Invalid");
+	
+	if (os_strcmp(token, "cur_delay") == 0) {
+		os_sprintf(buff, "%d", ws2812b_get_delay());
+	}
+
+	if (os_strcmp(token, "cur_brightness") == 0) {
+		os_sprintf(buff, "%d", ws2812b_get_brightness());
+	}
+
+	if (os_strcmp(token, "cur_stringlen") == 0) {
+		os_sprintf(buff, "%d", ws2812b_get_stringlen());
+	}
+
+	if (os_strcmp(token, "pattern_select") == 0) {
+		p = ws2812b_get_pattern();
+		os_sprintf(buff, 
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"1\" %s>\"All Off\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"2\" %s>\"All White\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"3\" %s>\"Flashing Primaries\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"4\" %s>\"Christmas\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"5\" %s>\"Fade Candy\"</td></tr>"
+			"<tr><td><input type=\"radio\" name=\"pattern\" value=\"6\" %s>\"Checkstop!\"</td></tr>",
+			(p==1?"checked":""),
+			(p==2?"checked":""),
+			(p==3?"checked":""),
+			(p==4?"checked":""),
+			(p==5?"checked":""),
+			(p==6?"checked":"")
+			 );
+	}
 
 	httpdSend(connData, buff, -1);
 }
@@ -561,12 +613,26 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 			os_strcpy(buff, (char *)sysCfg.mqtt_pass);
 	}
 
-	if (os_strcmp(token, "mqtt-relay-subs-topic")==0) {
-			os_strcpy(buff, (char *)sysCfg.mqtt_relay_subs_topic);
+	if (sysCfg.board_id==BOARD_ID_PHROB_DUAL_RELAY
+		|| sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY
+		|| sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY
+		|| sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+		if (os_strcmp(token, "mqtt-relay-subs-topic")==0) {
+			os_sprintf(buff, "<tr><td>Relays subs topic:</td><td><input type=\"text\" name=\"mqtt-relay-subs-topic\" id=\"mqtt-relay-subs-topic\" value=\"%s\" </td></tr>", sysCfg.mqtt_relay_subs_topic);
+		}
 	}
+#if defined(CONFIG_WS2812B)
+	if (sysCfg.board_id==BOARD_ID_PHROB_WS2812B) {
+		if (os_strcmp(token, "mqtt-led-subs-topic")==0) {
+			os_sprintf(buff, "<tr><td>LED subs topic:</td><td><input type=\"text\" name=\"mqtt-led-subs-topic\" id=\"mqtt-led-subs-topic\" value=\"%s\"</td></tr>", sysCfg.mqtt_led_subs_topic);
+		}
+	}
+#endif
 
 #if defined(CONFIG_SI7020) || defined(CONFIG_DHT22)
-        if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM || sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
+        if (sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM || 
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22 ||
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
 		if (os_strcmp(token, "config_temphum1")==0) {
 			os_sprintf(buff, "<tr><td>Temperature pub topic:</td><td><input type=\"text\" name=\"mqtt-temphum-temp-pub-topic\" id=\"mqtt-temphum-temp-pub-topic\" value=\"%s\">     </td></tr>", sysCfg.mqtt_temphum_temp_pub_topic);
 		}
@@ -915,7 +981,6 @@ int ICACHE_FLASH_ATTR cgiSensorSettings(HttpdConnData *connData) {
 	len=httpdFindArg(connData->post->buff, "sensor-temp-humi-enable", buff, sizeof(buff));
 	sysCfg.sensor_temphum_enable = (len > 0) ? 1:0;
 
-
 	len=httpdFindArg(connData->post->buff, "thermostat1-input", buff, sizeof(buff));
 	if (len>0) {
 		sysCfg.thermostat1_input=atoi(buff);
@@ -936,6 +1001,7 @@ int ICACHE_FLASH_ATTR cgiSensorSettings(HttpdConnData *connData) {
 		sysCfg.thermostat1hysteresislow=atoi(buff);
 	}
 	
+	os_printf("Saving CFG\n");
 	CFG_Save();
 	httpdRedirect(connData, "/");
 	return HTTPD_CGI_DONE;

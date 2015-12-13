@@ -24,6 +24,7 @@
 #define AP_IP        "192.168.4.1"
 #define AP_MASK      "255.255.255.0"
 #define AP_GW        "192.168.4.1"
+#define AP_BSSID	""
 
 #define HTTPD_PORT      80
 #define HTTPD_AUTH      0
@@ -49,15 +50,12 @@
 #define MQTT_PASS			""
 #define MQTT_USE_SSL		0
 #define MQTT_RELAY_SUBS_TOPIC 		"esp_%08X/out/relay/#"
+#define MQTT_LED_SUBS_TOPIC 		"esp_%08X/out/led/#"
 #define MQTT_DEEP_SLEEP_TIME    0
-#ifdef CONFIG_DHT22
-#define MQTT_TEMPHUM_TEMP_PUB_TOPIC  	"esp_%08X/in/dht22/temperature" 
-#define MQTT_TEMPHUM_HUMI_PUB_TOPIC   "esp_%08X/in/dht22/humidity" 		
-#endif
-#ifdef CONFIG_SI7020
-#define MQTT_TEMPHUM_TEMP_PUB_TOPIC  	"esp_%08X/in/si7020/temperature" 
-#define MQTT_TEMPHUM_HUMI_PUB_TOPIC   "esp_%08X/in/si7020/humidity" 		
-#endif
+#define MQTT_DHT22_TEMP_PUB_TOPIC  	"esp_%08X/in/dht22/temperature" 
+#define MQTT_DHT22_HUMI_PUB_TOPIC   "esp_%08X/in/dht22/humidity" 		
+#define MQTT_SI7020_TEMP_PUB_TOPIC  	"esp_%08X/in/si7020/temperature" 
+#define MQTT_SI7020_HUMI_PUB_TOPIC   "esp_%08X/in/si7020/humidity" 		
 #ifdef CONFIG_DS18B20
 #define MQTT_TEMP_PUB_TOPIC "esp_%08X/in/ds18b20/temperature"
 #endif
