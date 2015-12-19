@@ -131,8 +131,9 @@ ws2812b_init(void)
 	spi_rx_byte_order(SPI_DEV, SPI_BYTE_ORDER_HIGH_TO_LOW);
 	SET_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_CS_SETUP|SPI_CS_HOLD);
 	CLEAR_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_FLASH_MODE);
+	pcfg.cur = 0;
+	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);  // Setfn before set_delay() because it will turn on the timer
 	initialized = 1;
-	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);
 	if (sysCfg.ws2812b_pattern) {
 		ws2812b_set_stringlen(sysCfg.ws2812b_stringlen);
 		ws2812b_set_delay(sysCfg.ws2812b_delay);
@@ -143,7 +144,7 @@ ws2812b_init(void)
 		ws2812b_set_stringlen(18);
 		ws2812b_set_delay(500);
 		ws2812b_set_brightness(8);
-		ws2812b_set_pattern(0);
+		ws2812b_set_pattern(1);
 	}
 	return true;
 }
