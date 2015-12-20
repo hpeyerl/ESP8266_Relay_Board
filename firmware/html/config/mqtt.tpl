@@ -55,11 +55,11 @@ sd('mqtt-temp-pub-topic',v);
 <tr><td>Password:</td><td><input type="password" name="mqtt-pass" id="mqtt-pass" value="%mqtt-pass%"/>     </td></tr>
 <tr><td>Use SSL?:</td><td><input type="checkbox" name="mqtt-use-ssl" id="mqtt-use-ssl" /> (max 1024 bit key size)  </td></tr>
 <tr><td>Send IO Config?:</td><td><input type="checkbox" name="mqtt-send-config" id="mqtt-send-config" %mqtt-send-config-enabled% />  </td></tr>
-%config_relaysubs%
-%config_ledsubs%
 %config_temphum1%
 %config_temphum2%
 %config_temp%
+%config_relaysubs%
+%config_ledsubs%
 <tr><td><button type="button" onClick="parent.location='/'">Back</button><input type="submit" name="save" value="Save"></td></tr>
 </table>
 </form>
