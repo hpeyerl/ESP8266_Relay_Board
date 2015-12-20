@@ -430,9 +430,10 @@ void ICACHE_FLASH_ATTR user_init(void) {
 
 	stdoutInit();	
 	os_delay_us(100000);
-	wifi_set_opmode(0x2); //reset to AP+STA mode
 
 	CFG_Load();
+	// Should read a GPIO here or something.
+	//wifi_set_opmode(0x2); //Force AP+STA mode
 	ioInit();
 	captdnsInit();
 	WIFI_Connect(wifiConnectCb);
