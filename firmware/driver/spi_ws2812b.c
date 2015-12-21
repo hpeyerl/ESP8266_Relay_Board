@@ -123,6 +123,7 @@ bool
 ICACHE_FLASH_ATTR
 ws2812b_init(void)
 {
+	int delay = 500;
 	if (initialized || sysCfg.board_id != BOARD_ID_PHROB_WS2812B)
 		return true;
 	spi_init_gpio(SPI_DEV, SPI_CLK_USE_DIV);
@@ -131,21 +132,21 @@ ws2812b_init(void)
 	spi_rx_byte_order(SPI_DEV, SPI_BYTE_ORDER_HIGH_TO_LOW);
 	SET_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_CS_SETUP|SPI_CS_HOLD);
 	CLEAR_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_FLASH_MODE);
-	pcfg.cur = 0;
-	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);  // Setfn before set_delay() because it will turn on the timer
 	initialized = 1;
+	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);  // Setfn before set_delay() because it will turn on the timer
 	if (sysCfg.ws2812b_pattern) {
 		ws2812b_set_stringlen(sysCfg.ws2812b_stringlen);
-		ws2812b_set_delay(sysCfg.ws2812b_delay);
+		delay = sysCfg.ws2812b_delay;
 		ws2812b_set_brightness(sysCfg.ws2812b_brightness);
 		ws2812b_set_pattern(sysCfg.ws2812b_pattern);
 	}
 	else {
 		ws2812b_set_stringlen(18);
-		ws2812b_set_delay(500);
 		ws2812b_set_brightness(8);
 		ws2812b_set_pattern(1);
 	}
+	pcfg.cur = 1;
+	ws2812b_set_delay(delay);
 	return true;
 }
 
