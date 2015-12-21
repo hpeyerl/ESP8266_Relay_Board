@@ -45,7 +45,6 @@
 MQTT_Client mqttClient;
 #endif
 void ICACHE_FLASH_ATTR mqtt_config_publish(void);
-void ws2812b_init(void);
 
 //Function that tells the authentication system what users/passwords live on the system.
 //This is disabled in the default build; if you want to try it, enable the authBasic line in
@@ -331,7 +330,7 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	if (sysCfg.mqtt_send_config == 0)
 		return;
 #ifdef CONFIG_DHT22
-	if(sysCfg.sensor_dht22_enable && sysCfg.mqtt_enable==1) {
+	if(sysCfg.sensor_temp_enable && sysCfg.mqtt_enable==1) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
@@ -460,14 +459,14 @@ void ICACHE_FLASH_ATTR user_init(void) {
 #ifdef CONFIG_DHT22
 	if(sysCfg.sensor_temphum_enable && (
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD || 
-	    sysCfg.board_id == BOARD_ID_PHROB_DHT22) )
+	    sysCfg.board_id == BOARD_ID_PHROB_DHT22) ) {
 		DHTInit(SENSOR_DHT22, 30000);
 	}
 #endif // CONFIG_DHT22
 		
 #ifdef CONFIG_DS18B20
 	if (sysCfg.sensor_temp_enable &&
-	    sysCfg.board_id == BOARD_ID_RELAY_BOARD )
+	    sysCfg.board_id == BOARD_ID_RELAY_BOARD ) {
 		ds_init(30000);
 	}
 #endif
