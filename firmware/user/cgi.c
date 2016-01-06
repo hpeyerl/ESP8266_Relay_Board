@@ -278,11 +278,7 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 			ws2812b_set_pattern(0);
 	}
 
-	len=httpdFindArg(connData->post->buff, "save", buff, sizeof(buff));
-	if (len>0) {
-		gotcmd = 1;
-		ws2812b_save_pcfg();
-	}
+	ws2812b_save_pcfg();
 	
 	if(gotcmd==1) {
 		httpdRedirect(connData, "ws2812b.tpl");
@@ -307,7 +303,7 @@ void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **a
 	if (token == NULL) return;
 
 	os_sprintf(buff, "Invalid");
-	
+
 	if (os_strcmp(token, "cur_delay") == 0) {
 		os_sprintf(buff, "%d", ws2812b_get_delay());
 	}

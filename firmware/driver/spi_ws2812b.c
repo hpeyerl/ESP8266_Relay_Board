@@ -41,11 +41,12 @@ static bool initialized = 0;
  */
 struct PatternCfg pcfg;
 
+#define NUM_PATTERNS 6
 static ETSTimer PatternTimer;
 static struct Pattern {
 	int size;
 	uint8_t rgb[24][3];
-} patterns[6] = {
+} patterns[NUM_PATTERNS] = {
 	{
 		.size = 1,
 		.rgb = {
@@ -134,7 +135,7 @@ ws2812b_init(void)
 	CLEAR_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_FLASH_MODE);
 	initialized = 1;
 	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);  // Setfn before set_delay() because it will turn on the timer
-	if (sysCfg.ws2812b_pattern) {
+	if (sysCfg.ws2812b_pattern && sysCfg.ws2812b_pattern < NUM_PATTERNS) {
 		ws2812b_set_stringlen(sysCfg.ws2812b_stringlen);
 		delay = sysCfg.ws2812b_delay;
 		ws2812b_set_brightness(sysCfg.ws2812b_brightness);
@@ -205,6 +206,11 @@ ws2812b_save_pcfg(void)
 	sysCfg.ws2812b_delay = ws2812b_get_delay();
 	sysCfg.ws2812b_brightness = ws2812b_get_brightness();
 	sysCfg.ws2812b_stringlen = ws2812b_get_stringlen();
+	os_printf("Saving: %d %d %d %d\n", 
+			ws2812b_get_pattern(),
+			ws2812b_get_delay(),
+			ws2812b_get_brightness(),
+			ws2812b_get_stringlen());
 	CFG_Save();
 }
 
