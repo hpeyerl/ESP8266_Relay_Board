@@ -114,13 +114,11 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
   GPIO_OUTPUT_SET(DHT_PIN, 1);
   delay_ms(500);
 
-  // Hold low for 20ms
+  // Hold low for 1ms
   GPIO_OUTPUT_SET(DHT_PIN, 0);
   delay_ms(1);
 
-  // High for 40us
-  GPIO_OUTPUT_SET(DHT_PIN, 1);
-
+  // release.
   GPIO_DIS_OUTPUT(DHT_PIN);
   os_delay_us(40);
 
@@ -131,10 +129,16 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
   // wait for pin to drop?
   while (GPIO_INPUT_GET(DHT_PIN) == 1 && i < DHT_MAXCOUNT) {
     if (i >= DHT_MAXCOUNT) {
-      os_printf("Pin didn't drop\n");
-      goto fail;
+	os_delay_us(1);
+	os_printf("Pin didn't drop\n");
+	goto fail;
     }
     i++;
+  }
+  os_delay_us(80);	// go to the middle of the expected high
+  if (GPIO_INPUT_GET(DHT_PIN) == 0) {
+	  os_printf("bad sensor, or noise\n");
+	  goto fail;
   }
 
 #ifdef DEBUG_DHT
