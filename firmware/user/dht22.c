@@ -89,7 +89,7 @@ struct sensor_reading * ICACHE_FLASH_ATTR readDHT(void) {
     return &reading;
 }
 
-#define DEBUG_DHT 1
+#define DEBUG_DHT 0
     
 extern void ets_intr_lock();
 extern void ets_intr_unlock();
