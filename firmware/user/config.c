@@ -66,7 +66,10 @@ void ICACHE_FLASH_ATTR CFG_Save()
 	}
 }
 
-void ICACHE_FLASH_ATTR CFG_Load()
+//
+// if default, then use the default config.
+//
+void ICACHE_FLASH_ATTR CFG_Load(int def)
 {
 
 	os_printf("\r\nload cfg...(%d bytes)\r\n", sizeof(SYSCFG) );
@@ -79,7 +82,7 @@ void ICACHE_FLASH_ATTR CFG_Load()
 		spi_flash_read((CFG_LOCATION + 1) * SPI_FLASH_SEC_SIZE,
 					   (uint32 *)&sysCfg, sizeof(SYSCFG));
 	}
-	if(sysCfg.cfg_holder != CFG_HOLDER){
+	if(def || sysCfg.cfg_holder != CFG_HOLDER){
 		os_printf("invalid config - Using default config.\n");
 		os_memset(&sysCfg, 0x00, sizeof sysCfg);
 
