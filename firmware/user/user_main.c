@@ -32,6 +32,7 @@
 #include "config.h"
 #include "captdns.h"
 #include "spi_ws2812b.h"
+#include "gpio.h"
 
 //#include "netbios.h"
 //#include "pwm.h"
@@ -326,11 +327,12 @@ void ICACHE_FLASH_ATTR mqttPublishedCb(uint32_t *args)
 void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 {
 	char topic[128];
-	os_printf("%s\n", __FUNCTION__);
-	if (sysCfg.mqtt_send_config == 0)
+
+	if (sysCfg.mqtt_send_config == 0 || sysCfg.mqtt_enable == 0)
 		return;
+
 #ifdef CONFIG_DHT22
-	if(sysCfg.sensor_temp_enable && sysCfg.mqtt_enable==1) {
+	if(sysCfg.sensor_temp_enable) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
@@ -346,7 +348,7 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	}
 #endif // CONFIG_DHT22
 #ifdef CONFIG_DS18B20
-	if(sysCfg.sensor_ds18b20_enable) && sysCfg.mqtt_enable==1) {
+	if(sysCfg.sensor_ds18b20_enable)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
@@ -357,7 +359,6 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 #endif // CONFIG_DS18B20
 #ifdef CONFIG_SI7020
 	if(sysCfg.sensor_temphum_enable &&
-	   sysCfg.mqtt_enable==1 &&
 	   sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
@@ -376,7 +377,6 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 
 #ifdef CONFIG_MAX31855
 	if(sysCfg.sensor_temphum_enable &&
-	   sysCfg.mqtt_enable==1 &&
 	   sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
@@ -387,8 +387,7 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	}
 #endif // CONFIG_MAX31855
 
-	if( sysCfg.mqtt_enable==1 &&
-	   (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
+	if( (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
@@ -397,16 +396,14 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay1name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
-	if( sysCfg.mqtt_enable==1 &&
-	   (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
+	if( (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay2name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay2name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
-	if( sysCfg.mqtt_enable==1 &&
-	   (sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+	if( (sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay3name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay3name);
@@ -431,9 +428,24 @@ void ICACHE_FLASH_ATTR user_init(void) {
 	stdoutInit();	
 	os_delay_us(100000);
 
-	CFG_Load();
-	// Should read a GPIO here or something.
-	//wifi_set_opmode(0x2); //Force AP+STA mode
+#if 0
+	// GPIO2 is a bootmode jumper.  can't use it for default detect. sigh.
+	ioGPIO(0, 2);	// GPIO2 is an input and is our 'default' jumper.
+	PIN_PULLUP_EN( 2 );
+	if (GPIO_INPUT_GET(2) == 0) {
+		os_printf("default jumper detected. Loading Default config!\n");
+		//wifi_set_opmode(0x2); //Force AP+STA mode
+		CFG_Load(1);
+	}
+	else
+	{
+		os_printf("Loading Saved config!\n");
+		CFG_Load(0);
+	}
+#else
+	CFG_Load(0);
+#endif
+
 	ioInit();
 	captdnsInit();
 	WIFI_Connect(wifiConnectCb);
