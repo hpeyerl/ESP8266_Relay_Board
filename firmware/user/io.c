@@ -129,6 +129,9 @@ void ICACHE_FLASH_ATTR ioInit() {
 		case BOARD_ID_PHROB_TEMP_HUM:
 			SI7020_Init();
 			break;
+		case BOARD_ID_PHROB_WS2812B:
+			break;
+				
 	}
 
 	//gpio_output_set(0, 0, (1<<12), (1<<BTNGPIO));
