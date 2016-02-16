@@ -1,3 +1,4 @@
+#if defined(CONFIG_I2C)
 /******************************************************************************
  * Copyright 2013-2014 Espressif Systems (Wuxi)
  *
@@ -487,3 +488,4 @@ i2c_master_readUint8(uint8 address, uint8 regaddr, uint8 *value)
 	value = 0;
 	return false;
 }
+#endif
