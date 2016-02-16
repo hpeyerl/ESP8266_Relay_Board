@@ -68,7 +68,7 @@ GZIP_COMPRESSION = "yes"
 # compiler flags using during compilation of source files
 CFLAGS		= -Os -ggdb -std=c99 -Wpointer-arith -Wundef -Wall -Wl,-EL -fno-inline-functions \
 		-nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH \
-		-Wno-address -Wno-unused-function -Wno-unused-but-set-variable $(CONFIG)
+		-Wno-address -Wno-unused-function -Wno-unused-but-set-variable $(CONFIG) -DSDK_VERSION=$(SDK_VERSION)
 
 # linker flags used to generate the main object file
 LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static -L$(SDK_EXTRA_LIBS)
