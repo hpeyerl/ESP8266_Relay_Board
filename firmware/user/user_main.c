@@ -375,6 +375,17 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	}
 #endif // CONFIG_SI7020
 
+#ifdef CONFIG_WS2812B
+	if( sysCfg.board_id==BOARD_ID_PHROB_WS2812B ) {
+		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, "RGB_LED");
+		MQTT_Publish(&mqttClient, topic, "input", 6, 0, 0);
+		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, "RGB_LED");
+		MQTT_Publish(&mqttClient, topic, "int", 3, 0, 0);
+		os_sprintf(topic, "/config/%s/%s/unit", sysCfg.mqtt_devid, "RGB_LED");
+		MQTT_Publish(&mqttClient, topic, "0xNNRRGGBB", 7, 0, 0);
+	}
+#endif // CONFIG_WS2812B
+
 #ifdef CONFIG_MAX31855
 	if(sysCfg.sensor_temphum_enable &&
 	   sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE) {

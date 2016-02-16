@@ -127,7 +127,9 @@ void ICACHE_FLASH_ATTR ioInit() {
 			max31855_init();
 			break;
 		case BOARD_ID_PHROB_TEMP_HUM:
+#ifdef CONFIG_SI7020
 			SI7020_Init();
+#endif
 			break;
 		case BOARD_ID_PHROB_WS2812B:
 			break;

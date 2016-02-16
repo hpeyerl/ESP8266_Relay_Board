@@ -1254,11 +1254,19 @@ int ICACHE_FLASH_ATTR tplsi7020(HttpdConnData *connData, char *token, void **arg
 
 	os_strcpy(buff, "Unknown");
 	if (os_strcmp(token, "temperature")==0) {
+#ifdef CONFIG_SI7020
 		datum = SI7020_GetTemperature();
+#else
+		datum = 0xffff;
+#endif
 		os_sprintf(buff, "%d", datum);
 	}
 	if (os_strcmp(token, "humidity")==0) {
+#ifdef CONFIG_SI7020
 		datum = SI7020_GetHumidity();
+#else
+		datum = 0xffff;
+#endif
 		os_sprintf(buff, "%d", datum);
 	}
 
