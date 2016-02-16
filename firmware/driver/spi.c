@@ -53,7 +53,8 @@
 //				 
 ////////////////////////////////////////////////////////////////////////////////
 
-void spi_init(uint8 spi_no){
+void ICACHE_FLASH_ATTR
+spi_init(uint8 spi_no){
 	
 	if(spi_no > 1) return; //Only SPI and HSPI are valid spi modules. 
 
@@ -81,7 +82,8 @@ void spi_init(uint8 spi_no){
 //				 
 ////////////////////////////////////////////////////////////////////////////////
 
-void spi_init_gpio(uint8 spi_no, uint8 sysclk_as_spiclk){
+void ICACHE_FLASH_ATTR
+spi_init_gpio(uint8 spi_no, uint8 sysclk_as_spiclk){
 
 //	if(spi_no > 1) return; //Not required. Valid spi_no is checked with if/elif below.
 
@@ -119,7 +121,8 @@ void spi_init_gpio(uint8 spi_no, uint8 sysclk_as_spiclk){
 //				 
 ////////////////////////////////////////////////////////////////////////////////
 
-void spi_clock(uint8 spi_no, uint16 prediv, uint8 cntdiv){
+void ICACHE_FLASH_ATTR
+spi_clock(uint8 spi_no, uint16 prediv, uint8 cntdiv){
 	
 	if(spi_no > 1) return;
 
@@ -158,7 +161,8 @@ void spi_clock(uint8 spi_no, uint16 prediv, uint8 cntdiv){
 //				 
 ////////////////////////////////////////////////////////////////////////////////
 
-void spi_tx_byte_order(uint8 spi_no, uint8 byte_order){
+void ICACHE_FLASH_ATTR
+spi_tx_byte_order(uint8 spi_no, uint8 byte_order){
 
 	if(spi_no > 1) return;
 
@@ -188,7 +192,8 @@ void spi_tx_byte_order(uint8 spi_no, uint8 byte_order){
 //				 
 ////////////////////////////////////////////////////////////////////////////////
 
-void spi_rx_byte_order(uint8 spi_no, uint8 byte_order){
+void ICACHE_FLASH_ATTR
+spi_rx_byte_order(uint8 spi_no, uint8 byte_order){
 
 	if(spi_no > 1) return;
 
@@ -221,7 +226,8 @@ void spi_rx_byte_order(uint8 spi_no, uint8 byte_order){
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-uint32 spi_transaction(uint8 spi_no, uint8 cmd_bits, uint16 cmd_data, uint32 addr_bits, uint32 addr_data, uint32 dout_bits, uint32 dout_data,
+uint32 ICACHE_FLASH_ATTR
+spi_transaction(uint8 spi_no, uint8 cmd_bits, uint16 cmd_data, uint32 addr_bits, uint32 addr_data, uint32 dout_bits, uint32 dout_data,
 				uint32 din_bits, uint32 dummy_bits){
 
 	if(spi_no > 1) return 0;  //Check for a valid SPI 
@@ -316,20 +322,3 @@ uint32 spi_transaction(uint8 spi_no, uint8 cmd_bits, uint16 cmd_data, uint32 add
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/*///////////////////////////////////////////////////////////////////////////////
-//
-// Function Name: func
-//   Description: 
-//    Parameters: 
-//				 
-////////////////////////////////////////////////////////////////////////////////
-
-void func(params){
-
-}
-
-///////////////////////////////////////////////////////////////////////////////*/
-
-
-

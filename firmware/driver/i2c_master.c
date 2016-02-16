@@ -84,7 +84,8 @@ LOCAL uint8 i2c_master_getCL(void)
  * Parameters   : NONE
  * Returns	  : NONE
 *******************************************************************************/
-void i2c_master_init(void)
+void ICACHE_FLASH_ATTR
+i2c_master_init(void)
 {
 	uint8 i;
 
@@ -125,7 +126,8 @@ uint8 i2c_master_get_pinSCL(){
  * Parameters   : uint8 sda and scl pin numbers
  * Returns	  : bool, true if init okay
 *******************************************************************************/
-bool i2c_master_gpio_init(uint8 sda, uint8 scl)
+bool ICACHE_FLASH_ATTR
+i2c_master_gpio_init(uint8 sda, uint8 scl)
 {
 	if((sda > GPIO_PIN_NUM) || (pin_func[sda] == GPIO_PIN_FUNC_INVALID)){
 		return false;
@@ -343,7 +345,8 @@ void i2c_master_writeByte(uint8 wrdata)
 	}
 }
 
-bool i2c_master_writeBytes(uint8 address, uint8 *values, uint8 length)
+bool ICACHE_FLASH_ATTR
+i2c_master_writeBytes(uint8 address, uint8 *values, uint8 length)
 {
 	i2c_master_start();
 
@@ -375,14 +378,16 @@ bool i2c_master_writeBytes(uint8 address, uint8 *values, uint8 length)
 }
 
 
-bool i2c_master_writeBytes1(uint8 address, uint8 byte1)
+bool ICACHE_FLASH_ATTR
+i2c_master_writeBytes1(uint8 address, uint8 byte1)
 {
 	uint8 data[1];
 	data[0] = byte1;
 	return i2c_master_writeBytes(address, data, 1);
 }
 
-bool i2c_master_writeBytes2(uint8 address, uint8 byte1, uint8 byte2)
+bool ICACHE_FLASH_ATTR
+i2c_master_writeBytes2(uint8 address, uint8 byte1, uint8 byte2)
 {
 	uint8 data[2];
 	data[0] = byte1;
@@ -390,7 +395,8 @@ bool i2c_master_writeBytes2(uint8 address, uint8 byte1, uint8 byte2)
 	return i2c_master_writeBytes(address, data, 2);
 }
 
-bool i2c_master_writeBytes3(uint8 address, uint8 byte1, uint8 byte2, uint8 byte3)
+bool ICACHE_FLASH_ATTR
+i2c_master_writeBytes3(uint8 address, uint8 byte1, uint8 byte2, uint8 byte3)
 {
 	uint8 data[3];
 	data[0] = byte1;
@@ -443,7 +449,8 @@ bool i2c_master_readBytes(uint8 address, uint8 *values, uint8 length)
 	return true;
 }
 
-bool i2c_master_readSint16(uint8 address, uint8 regaddr, sint16 *value)
+bool ICACHE_FLASH_ATTR
+i2c_master_readSint16(uint8 address, uint8 regaddr, sint16 *value)
 {
 	uint8 data[2];
 	data[0] = regaddr;
@@ -455,7 +462,8 @@ bool i2c_master_readSint16(uint8 address, uint8 regaddr, sint16 *value)
 	return false;
 }
 
-bool i2c_master_readUint16(uint8 address, uint8 regaddr, uint16 *value)
+bool ICACHE_FLASH_ATTR
+i2c_master_readUint16(uint8 address, uint8 regaddr, uint16 *value)
 {
 	uint8 data[2];
 	data[0] = regaddr;
@@ -467,7 +475,8 @@ bool i2c_master_readUint16(uint8 address, uint8 regaddr, uint16 *value)
 	return false;
 }
 
-bool i2c_master_readUint8(uint8 address, uint8 regaddr, uint8 *value)
+bool ICACHE_FLASH_ATTR
+i2c_master_readUint8(uint8 address, uint8 regaddr, uint8 *value)
 {
 	uint8 data[1];
 	data[0] = regaddr;
