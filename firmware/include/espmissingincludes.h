@@ -37,12 +37,22 @@ void ets_update_cpu_frequency(int freqmhz);
 int os_printf(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));
 int os_snprintf(char *str, size_t size, const char *format, ...) __attribute__ ((format (printf, 3, 4)));
 int os_printf_plus(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));
+#if (SDK_VERSION==120) // Needed in 1.2.0 and earlier.
 void pvPortFree(void *ptr);
 void *pvPortMalloc(size_t xWantedSize);
 void *pvPortZalloc(size_t);
-void uart_div_modify(int no, unsigned int freq);
 void vPortFree(void *ptr);
 void *vPortMalloc(size_t xWantedSize);
+#endif
+#if (SDK_VERSION==140) // Needed in 1.4.0
+void pvPortFree(void *ptr, const char *, int);
+void *pvPortMalloc(size_t xWantedSize, const char *, int);
+void *pvPortZalloc(size_t, const char *, int);
+void vPortFree(void *ptr, const char *, int);
+void *vPortMalloc(size_t xWantedSize, const char *, int);
+#endif
+
+void uart_div_modify(int no, unsigned int freq);
 uint8 wifi_get_opmode(void);
 uint32 system_get_time();
 #if 0 // sdk 1.2.0 has this
