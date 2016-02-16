@@ -118,17 +118,17 @@ void ICACHE_FLASH_ATTR CFG_Load(int def)
 		os_sprintf((char *)sysCfg.mqtt_user, "%s", MQTT_USER);
 		os_sprintf((char *)sysCfg.mqtt_pass, "%s", MQTT_PASS);
 		sysCfg.mqtt_use_ssl=MQTT_USE_SSL;
-		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic, MQTT_RELAY_SUBS_TOPIC, system_get_chip_id());
+		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic, MQTT_RELAY_SUBS_TOPIC);
 		if (sysCfg.board_id == BOARD_ID_RELAY_BOARD || 
 		    sysCfg.board_id == BOARD_ID_PHROB_DHT22) {
-		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic, MQTT_DHT22_TEMP_PUB_TOPIC, system_get_chip_id()); 
-		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic, MQTT_DHT22_HUMI_PUB_TOPIC, system_get_chip_id());		
+		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic, MQTT_DHT22_TEMP_PUB_TOPIC); 
+		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic, MQTT_DHT22_HUMI_PUB_TOPIC);		
 		}
 		else {
-		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic, MQTT_SI7020_TEMP_PUB_TOPIC, system_get_chip_id()); 
-		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic, MQTT_SI7020_HUMI_PUB_TOPIC, system_get_chip_id());		
+		os_sprintf((char *)sysCfg.mqtt_temphum_temp_pub_topic, MQTT_SI7020_TEMP_PUB_TOPIC); 
+		os_sprintf((char *)sysCfg.mqtt_temphum_humi_pub_topic, MQTT_SI7020_HUMI_PUB_TOPIC);		
 		}
-		os_sprintf((char *)sysCfg.mqtt_temp_pub_topic, MQTT_TEMP_PUB_TOPIC, system_get_chip_id());
+		os_sprintf((char *)sysCfg.mqtt_temp_pub_topic, MQTT_TEMP_PUB_TOPIC);
 
 		sysCfg.sensor_temp_enable=SENSOR_TEMP_ENABLE;
 		sysCfg.sensor_temphum_enable=SENSOR_TEMPHUM_ENABLE;
@@ -143,7 +143,7 @@ void ICACHE_FLASH_ATTR CFG_Load(int def)
 		os_sprintf((char *)sysCfg.relay2name, "%s", RELAY2NAME);
 		os_sprintf((char *)sysCfg.relay3name, "%s", RELAY3NAME);
 
-		os_sprintf((char *)sysCfg.mqtt_led_subs_topic, MQTT_LED_SUBS_TOPIC, system_get_chip_id());
+		os_sprintf((char *)sysCfg.mqtt_led_subs_topic, MQTT_LED_SUBS_TOPIC);
 		sysCfg.ws2812b_pattern = 0;
 		sysCfg.ws2812b_delay = 500;
 		sysCfg.ws2812b_brightness = 8;

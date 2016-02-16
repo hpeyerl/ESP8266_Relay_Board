@@ -49,18 +49,18 @@
 #define MQTT_USER			""
 #define MQTT_PASS			""
 #define MQTT_USE_SSL		0
-#define MQTT_RELAY_SUBS_TOPIC 		"esp_%08X/out/relay/#"
-#define MQTT_LED_SUBS_TOPIC 		"esp_%08X/out/led/#"
+#define MQTT_RELAY_SUBS_TOPIC 		"out/relay/#"
+#define MQTT_LED_SUBS_TOPIC 		"out/led/#"
 #define MQTT_DEEP_SLEEP_TIME    0
-#define MQTT_DHT22_TEMP_PUB_TOPIC  	"esp_%08X/in/dht22/temperature" 
-#define MQTT_DHT22_HUMI_PUB_TOPIC   "esp_%08X/in/dht22/humidity" 		
-#define MQTT_SI7020_TEMP_PUB_TOPIC  	"esp_%08X/in/si7020/temperature" 
-#define MQTT_SI7020_HUMI_PUB_TOPIC   "esp_%08X/in/si7020/humidity" 		
+#define MQTT_DHT22_TEMP_PUB_TOPIC  	"in/dht22/temperature" 
+#define MQTT_DHT22_HUMI_PUB_TOPIC   "in/dht22/humidity" 		
+#define MQTT_SI7020_TEMP_PUB_TOPIC  	"in/si7020/temperature" 
+#define MQTT_SI7020_HUMI_PUB_TOPIC   "in/si7020/humidity" 		
 #ifdef CONFIG_DS18B20
-#define MQTT_TEMP_PUB_TOPIC "esp_%08X/in/ds18b20/temperature"
+#define MQTT_TEMP_PUB_TOPIC "in/ds18b20/temperature"
 #endif
 #ifdef CONFIG_MAX31855
-#define MQTT_TEMP_PUB_TOPIC "esp_%08X/in/max31855/temperature"
+#define MQTT_TEMP_PUB_TOPIC "in/max31855/temperature"
 #endif
 
 #define SENSOR_TEMPHUM_ENABLE     0
