@@ -82,7 +82,6 @@ static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 #ifdef CONFIG_MQTT
 static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 	if(sysCfg.mqtt_enable==1) {
-		//os_printf("Sending MQTT\n");
 		
 		if (mqttClient.connState != MQTT_DATA) {
 			os_printf("MQTT: Waiting to publish....\n");
