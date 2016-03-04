@@ -192,6 +192,20 @@ ws2812b_send_rgb(uint8_t r, uint8_t g, uint8_t b)
 }
 
 void ICACHE_FLASH_ATTR
+ws2812b_mqtt_pub_cb(uint32_t nrgb)
+{
+	int n, r, g, b;
+
+	n = nrgb&0xff000000;
+	r = nrgb&0x00ff0000;
+        g = nrgb&0x0000ff00;
+        b = nrgb&0x000000ff;
+	while(n--) {
+		ws2812b_send_rgb(r, g, b);
+	}
+}
+
+void ICACHE_FLASH_ATTR
 ws2812b_set_timer_delay()
 {
 	os_timer_disarm(&PatternTimer);

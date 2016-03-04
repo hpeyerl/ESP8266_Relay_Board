@@ -11,6 +11,7 @@ void ws2812b_set_stringlen(uint16_t);
 uint8_t ws2812b_get_brightness(void);
 void ws2812b_set_brightness(uint8_t);
 void ws2812b_save_pcfg();
+void ws2812b_mqtt_pub_cb(uint32_t);
 
 void ws2812b_set_timer_delay();
 

@@ -239,7 +239,7 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	strTopic[topic_len] = '\0';
 
 	char *devid;
-	char *relay;
+	char *device;
 
 	devid = strTopic;
 	if (devid[0] == '/') // leading /
@@ -248,9 +248,9 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	*saveptr = 0;
 	saveptr++;
 
-	relay = saveptr;
-	if (relay == NULL) {
-		os_printf("{%s} Can't find a relay name\n", devid);
+	device = saveptr;
+	if (device == NULL) {
+		os_printf("{%s} Can't find a device name\n", devid);
 		return;
 	}
 	saveptr = strchr(devid, '/');
@@ -259,16 +259,26 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 		arg = ++saveptr;
 	}
 
+#ifdef CONFIG_WS2812B
+	if (strncmp((const char *)device, (const char *)sysCfg.mqtt_led_subs_topic, strlen((const char *)sysCfg.mqtt_led_subs_topic)) == 0) {
+		os_printf("Got publish for LED [%s]\n", strData);
+		uint32_t nrgb = (uint32_t)atoi(strData);
+		ws2812b_mqtt_pub_cb(nrgb);
+		return;
+	}
+#endif
+
+
 	relayNum = 0;
 	// iterate through all relay names. This is kind of gross
-	// os_printf("Compare %s : {%s} with {%s, %s, %s}\n", devid, relay, sysCfg.relay1name, sysCfg.relay2name, sysCfg.relay3name);
-	if (strncmp((char *)sysCfg.relay1name, relay, strlen((char *)sysCfg.relay1name)) == 0)
+	// os_printf("Compare %s : {%s} with {%s, %s, %s}\n", devid, device, sysCfg.relay1name, sysCfg.relay2name, sysCfg.relay3name);
+	if (strncmp((char *)sysCfg.relay1name, device, strlen((char *)sysCfg.relay1name)) == 0)
 		relayNum = 1;
 	else
-		if (strncmp((char *)sysCfg.relay2name, relay, strlen((char *)sysCfg.relay2name)) == 0)
+		if (strncmp((char *)sysCfg.relay2name, device, strlen((char *)sysCfg.relay2name)) == 0)
 			relayNum = 2;
 		else
-			if (strncmp((char *)sysCfg.relay3name, relay, strlen((char *)sysCfg.relay3name)) == 0)
+			if (strncmp((char *)sysCfg.relay3name, device, strlen((char *)sysCfg.relay3name)) == 0)
 				relayNum = 3;
 	os_printf("Relay %d is now: %s \r\n", relayNum, strData);
 	
@@ -404,6 +414,7 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay1name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
+		MQTT_Publish(&mqttClient, topic, "output", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay1name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
@@ -411,12 +422,14 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay2name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
+		MQTT_Publish(&mqttClient, topic, "output", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay2name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
 	if( (sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay3name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
+		MQTT_Publish(&mqttClient, topic, "output", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay3name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
