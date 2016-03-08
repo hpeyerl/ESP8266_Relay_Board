@@ -210,8 +210,9 @@ void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 	}
 	if (sysCfg.board_id==BOARD_ID_PHROB_WS2812B)
 	{
-		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", sysCfg.mqtt_led_subs_topic);
-		MQTT_Subscribe(client, (char *)sysCfg.mqtt_led_subs_topic,0);
+		os_sprintf(topic, "%s/%s", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
+		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", topic);
+		MQTT_Subscribe(client, (char *)topic,0);
 	}
 
 	mqtt_config_publish();	// send our config record(s).
@@ -230,6 +231,7 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	char strTopic[topic_len + 1];
 	uint8_t relayNum;
 	int pulse=0;
+	char *rest;
 
 	char strData[length + 1];
 	os_memcpy(strData, data, length);
@@ -260,9 +262,10 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	}
 
 #ifdef CONFIG_WS2812B
+
 	if (strncmp((const char *)device, (const char *)sysCfg.mqtt_led_subs_topic, strlen((const char *)sysCfg.mqtt_led_subs_topic)) == 0) {
 		os_printf("Got publish for LED [%s]\n", strData);
-		uint32_t nrgb = (uint32_t)atoi(strData);
+		uint32_t nrgb = (uint32_t)strtol(strData, &rest, 16);
 		ws2812b_mqtt_pub_cb(nrgb);
 		return;
 	}
@@ -387,12 +390,12 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 
 #ifdef CONFIG_WS2812B
 	if( sysCfg.board_id==BOARD_ID_PHROB_WS2812B ) {
-		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, "RGB_LED");
+		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
 		MQTT_Publish(&mqttClient, topic, "input", 6, 0, 0);
-		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, "RGB_LED");
+		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
 		MQTT_Publish(&mqttClient, topic, "int", 3, 0, 0);
-		os_sprintf(topic, "/config/%s/%s/unit", sysCfg.mqtt_devid, "RGB_LED");
-		MQTT_Publish(&mqttClient, topic, "0xNNRRGGBB", 7, 0, 0);
+		os_sprintf(topic, "/config/%s/%s/unit", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
+		MQTT_Publish(&mqttClient, topic, "NNRRGGBB", 7, 0, 0);
 	}
 #endif // CONFIG_WS2812B
 
