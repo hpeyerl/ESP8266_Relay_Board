@@ -56,6 +56,7 @@ CONFIG += -DCONFIG_MAX31855
 # CONFIG += -DCONFIG_GET_EXTERNAL_IP
 # CONFIG += -DCONFIG_THERMOSTAT
 CONFIG += -DCONFIG_WS2812B
+CONFIG += -DCONFIG_TSL2561
 
 # libraries used in this project, mainly provided by the SDK
 LIBS		= c hal gcc phy pp net80211 wpa main lwip
