@@ -18,6 +18,7 @@
 #include "config.h"
 #include "spi_max31855.h"
 #include "i2c_si7020.h"
+#include "i2c_tsl2561.h"
 
 #include "config.h"
 #include "espmissingincludes.h"
@@ -126,13 +127,18 @@ void ICACHE_FLASH_ATTR ioInit() {
 		case BOARD_ID_PHROB_THERMOCOUPLE:
 			max31855_init();
 			break;
-		case BOARD_ID_PHROB_TEMP_HUM:
 #ifdef CONFIG_SI7020
+		case BOARD_ID_PHROB_TEMP_HUM:
 			SI7020_Init();
-#endif
 			break;
+#endif
 		case BOARD_ID_PHROB_WS2812B:
 			break;
+#ifdef CONFIG_TSL2561
+		case BOARD_ID_PHROB_TSL2561:
+			TSL2561_Init();
+			break;
+#endif
 				
 	}
 
