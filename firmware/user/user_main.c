@@ -412,6 +412,17 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	}
 #endif // CONFIG_MAX31855
 
+#ifdef CONFIG_TSL2561
+	if(sysCfg.board_id == BOARD_ID_PHROB_TSL2561) {
+		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
+		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
+		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
+		MQTT_Publish(&mqttClient, topic, "int", 3, 0, 0);
+		os_sprintf(topic, "/config/%s/%s/unit", sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
+		MQTT_Publish(&mqttClient, topic, "lux", 7, 0, 0);
+	}
+#endif // CONFIG_TSL2561
+
 	if( (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY ||
