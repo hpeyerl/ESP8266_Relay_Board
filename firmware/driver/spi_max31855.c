@@ -202,11 +202,6 @@ do_max31855_pub_kprobe(int argc, const char* const* argv)
 	return 0;
 }
 
-CONSOLE_CMD(max31855_pub_kprobe, 1, 1, 
-		do_max31855_pub_kprobe, NULL, NULL, 
-		"Publish Thermocouple Temperature via MQTT"
-);
-
 static int  ICACHE_FLASH_ATTR
 do_max31855_pub_internal(int argc, const char* const* argv)
 {
@@ -234,12 +229,4 @@ static int do_max31855_temps(int argc, const char* const* argv)
 	os_printf("Internal: %d\r\n Kprobe: %d\r\n", internal, kprobe);
 	return 0;
 }
-
-CONSOLE_CMD(max31855_pub_internal, 1, 1, 
-		do_max31855_pub_internal, NULL, NULL, 
-		"Publish On-chip Temperature via MQTT"
-);
-
-CONSOLE_CMD(temps, 1, 1, do_max31855_temps, NULL, NULL, "");
-
 #endif // MQTT

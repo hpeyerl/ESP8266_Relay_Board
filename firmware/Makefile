@@ -47,11 +47,11 @@ EXTRA_INCDIR	= include \
 
 CONFIG += -DCONFIG_MAX_RELAYS=2
 CONFIG += -DCONFIG_MQTT
-# CONFIG += -DCONFIG_I2C
 CONFIG += -DCONFIG_DHT22
 # CONFIG += -DCONFIG_DS18B20
 CONFIG += -DCONFIG_MAX31855
-CONFIG += -DCONFIG_SI7020
+# CONFIG += -DCONFIG_I2C
+# CONFIG += -DCONFIG_SI7020
 # CONFIG += -DCONFIG_MLX91205
 # CONFIG += -DCONFIG_GET_EXTERNAL_IP
 # CONFIG += -DCONFIG_THERMOSTAT
@@ -68,7 +68,7 @@ GZIP_COMPRESSION = "yes"
 # compiler flags using during compilation of source files
 CFLAGS		= -Os -ggdb -std=c99 -Wpointer-arith -Wundef -Wall -Wl,-EL -fno-inline-functions \
 		-nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH \
-		-Wno-address -Wno-unused-function -Wno-unused-but-set-variable $(CONFIG)
+		-Wno-address -Wno-unused-function -Wno-unused-but-set-variable $(CONFIG) -DSDK_VERSION=$(SDK_VERSION)
 
 # linker flags used to generate the main object file
 LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static -L$(SDK_EXTRA_LIBS)

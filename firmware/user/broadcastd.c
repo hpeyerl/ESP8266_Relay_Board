@@ -34,6 +34,9 @@ static ETSTimer MQTTbroadcastTimer;
 #endif
 static ETSTimer broadcastTimer; 
  
+//
+// Broadcast to thingspeak
+//
 static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 
 	char buf[384];
@@ -81,7 +84,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 
 	char topic[128];
 	if(sysCfg.mqtt_enable==1) {
-		//os_printf("Sending MQTT\n");
 		
 		if (mqttClient.connState != MQTT_DATA) {
 			os_printf("MQTT: Waiting to publish....\n");
@@ -179,12 +181,12 @@ uint8_t go_to_sleep;
 void ICACHE_FLASH_ATTR broadcastd_init(void){
 
 	go_to_sleep = 0;
+	int timeout = 60000;
+
+	if (sysCfg.mqtt_deep_sleep_time != 0)
+		timeout=1000;	// If we're coming out of deepsleep, then we want to broadcast right away.
 #ifdef CONFIG_MQTT
 	if(sysCfg.mqtt_enable==1 && (sysCfg.sensor_temp_enable || sysCfg.sensor_temphum_enable)) {
-		int timeout = 60000;
-		if (sysCfg.mqtt_deep_sleep_time != 0)
-			timeout=1000;	// If we're coming out of deepsleep, then we want to broadcast right away.
-
 		os_printf("Arming MQTT broadcast timer for %d seconds\n", timeout/1000);  	
 		os_timer_setfn(&MQTTbroadcastTimer, MQTTbroadcastReading, NULL);
 		os_timer_arm(&MQTTbroadcastTimer, timeout, 1);
@@ -194,6 +196,6 @@ void ICACHE_FLASH_ATTR broadcastd_init(void){
 	if(sysCfg.broadcastd_enable==1) {
 		os_timer_setfn(&broadcastTimer, broadcastReading, NULL);
 		os_printf("Arming HTTP broadcast timer\n");  	
-		os_timer_arm(&broadcastTimer, 60000, 1);		
+		os_timer_arm(&MQTTbroadcastTimer, timeout, 1);
 	}
 }

@@ -32,6 +32,7 @@
 #include "config.h"
 #include "captdns.h"
 #include "spi_ws2812b.h"
+#include "gpio.h"
 
 //#include "netbios.h"
 //#include "pwm.h"
@@ -209,8 +210,9 @@ void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 	}
 	if (sysCfg.board_id==BOARD_ID_PHROB_WS2812B)
 	{
-		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", sysCfg.mqtt_led_subs_topic);
-		MQTT_Subscribe(client, (char *)sysCfg.mqtt_led_subs_topic,0);
+		os_sprintf(topic, "%s/%s", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
+		os_printf("MQTT: Connected.  Subscribing to: %s\r\n", topic);
+		MQTT_Subscribe(client, (char *)topic,0);
 	}
 
 	mqtt_config_publish();	// send our config record(s).
@@ -229,6 +231,7 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	char strTopic[topic_len + 1];
 	uint8_t relayNum;
 	int pulse=0;
+	char *rest;
 
 	char strData[length + 1];
 	os_memcpy(strData, data, length);
@@ -238,7 +241,7 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	strTopic[topic_len] = '\0';
 
 	char *devid;
-	char *relay;
+	char *device;
 
 	devid = strTopic;
 	if (devid[0] == '/') // leading /
@@ -247,9 +250,9 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	*saveptr = 0;
 	saveptr++;
 
-	relay = saveptr;
-	if (relay == NULL) {
-		os_printf("{%s} Can't find a relay name\n", devid);
+	device = saveptr;
+	if (device == NULL) {
+		os_printf("{%s} Can't find a device name\n", devid);
 		return;
 	}
 	saveptr = strchr(devid, '/');
@@ -258,16 +261,27 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 		arg = ++saveptr;
 	}
 
+#ifdef CONFIG_WS2812B
+
+	if (strncmp((const char *)device, (const char *)sysCfg.mqtt_led_subs_topic, strlen((const char *)sysCfg.mqtt_led_subs_topic)) == 0) {
+		os_printf("Got publish for LED [%s]\n", strData);
+		uint32_t nrgb = (uint32_t)strtol(strData, &rest, 16);
+		ws2812b_mqtt_pub_cb(nrgb);
+		return;
+	}
+#endif
+
+
 	relayNum = 0;
 	// iterate through all relay names. This is kind of gross
-	// os_printf("Compare %s : {%s} with {%s, %s, %s}\n", devid, relay, sysCfg.relay1name, sysCfg.relay2name, sysCfg.relay3name);
-	if (strncmp((char *)sysCfg.relay1name, relay, strlen((char *)sysCfg.relay1name)) == 0)
+	// os_printf("Compare %s : {%s} with {%s, %s, %s}\n", devid, device, sysCfg.relay1name, sysCfg.relay2name, sysCfg.relay3name);
+	if (strncmp((char *)sysCfg.relay1name, device, strlen((char *)sysCfg.relay1name)) == 0)
 		relayNum = 1;
 	else
-		if (strncmp((char *)sysCfg.relay2name, relay, strlen((char *)sysCfg.relay2name)) == 0)
+		if (strncmp((char *)sysCfg.relay2name, device, strlen((char *)sysCfg.relay2name)) == 0)
 			relayNum = 2;
 		else
-			if (strncmp((char *)sysCfg.relay3name, relay, strlen((char *)sysCfg.relay3name)) == 0)
+			if (strncmp((char *)sysCfg.relay3name, device, strlen((char *)sysCfg.relay3name)) == 0)
 				relayNum = 3;
 	os_printf("Relay %d is now: %s \r\n", relayNum, strData);
 	
@@ -326,10 +340,10 @@ void ICACHE_FLASH_ATTR mqttPublishedCb(uint32_t *args)
 void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 {
 	char topic[128];
-	os_printf("%s\n", __FUNCTION__);
-	if (sysCfg.mqtt_send_config == 0)
+
+	if (sysCfg.mqtt_send_config == 0 || sysCfg.mqtt_enable == 0)
 		return;
-#ifdef CONFIG_DHT22
+
 	if(sysCfg.sensor_temphum_enable && sysCfg.mqtt_enable==1) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
@@ -357,7 +371,6 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 #endif // CONFIG_DS18B20
 #ifdef CONFIG_SI7020
 	if(sysCfg.sensor_temphum_enable &&
-	   sysCfg.mqtt_enable==1 &&
 	   sysCfg.board_id == BOARD_ID_PHROB_TEMP_HUM) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
@@ -374,9 +387,19 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	}
 #endif // CONFIG_SI7020
 
+#ifdef CONFIG_WS2812B
+	if( sysCfg.board_id==BOARD_ID_PHROB_WS2812B ) {
+		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
+		MQTT_Publish(&mqttClient, topic, "input", 6, 0, 0);
+		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
+		MQTT_Publish(&mqttClient, topic, "int", 3, 0, 0);
+		os_sprintf(topic, "/config/%s/%s/unit", sysCfg.mqtt_devid, sysCfg.mqtt_led_subs_topic);
+		MQTT_Publish(&mqttClient, topic, "NNRRGGBB", 7, 0, 0);
+	}
+#endif // CONFIG_WS2812B
+
 #ifdef CONFIG_MAX31855
 	if(sysCfg.sensor_temphum_enable &&
-	   sysCfg.mqtt_enable==1 &&
 	   sysCfg.board_id == BOARD_ID_PHROB_THERMOCOUPLE) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
 		MQTT_Publish(&mqttClient, topic, "output", 6, 0, 0);
@@ -387,28 +410,28 @@ void ICACHE_FLASH_ATTR mqtt_config_publish(void)
 	}
 #endif // CONFIG_MAX31855
 
-	if( sysCfg.mqtt_enable==1 &&
-	   (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
+	if( (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay1name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
+		MQTT_Publish(&mqttClient, topic, "output", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay1name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
-	if( sysCfg.mqtt_enable==1 &&
-	   (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
+	if( (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay2name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
+		MQTT_Publish(&mqttClient, topic, "output", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay2name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
-	if( sysCfg.mqtt_enable==1 &&
-	   (sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
+	if( (sysCfg.board_id == BOARD_ID_RELAY_BOARD)) {
 		os_sprintf(topic, "/config/%s/%s/direction", sysCfg.mqtt_devid, sysCfg.relay3name);
 		MQTT_Publish(&mqttClient, topic, "input", 5, 0, 0);
+		MQTT_Publish(&mqttClient, topic, "output", 5, 0, 0);
 		os_sprintf(topic, "/config/%s/%s/type", sysCfg.mqtt_devid, sysCfg.relay3name);
 		MQTT_Publish(&mqttClient, topic, "bool", 4, 0, 0);
 	}
@@ -431,9 +454,24 @@ void ICACHE_FLASH_ATTR user_init(void) {
 	stdoutInit();	
 	os_delay_us(100000);
 
-	CFG_Load();
-	// Should read a GPIO here or something.
-	//wifi_set_opmode(0x2); //Force AP+STA mode
+#if 0
+	// GPIO2 is a bootmode jumper.  can't use it for default detect. sigh.
+	ioGPIO(0, 2);	// GPIO2 is an input and is our 'default' jumper.
+	PIN_PULLUP_EN( 2 );
+	if (GPIO_INPUT_GET(2) == 0) {
+		os_printf("default jumper detected. Loading Default config!\n");
+		//wifi_set_opmode(0x2); //Force AP+STA mode
+		CFG_Load(1);
+	}
+	else
+	{
+		os_printf("Loading Saved config!\n");
+		CFG_Load(0);
+	}
+#else
+	CFG_Load(0);
+#endif
+
 	ioInit();
 	captdnsInit();
 	WIFI_Connect(wifiConnectCb);

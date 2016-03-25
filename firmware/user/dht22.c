@@ -89,7 +89,7 @@ struct sensor_reading * ICACHE_FLASH_ATTR readDHT(void) {
     return &reading;
 }
 
-#define DEBUG_DHT 1
+#undef DEBUG_DHT
     
 extern void ets_intr_lock();
 extern void ets_intr_unlock();
@@ -107,22 +107,20 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
 
   data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
+  // Set pin to input with pullup
+  PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO4_U);
+
   // Wake up device, 250ms of high
   GPIO_OUTPUT_SET(DHT_PIN, 1);
   delay_ms(500);
 
-  // Hold low for 20ms
+  // Hold low for 1ms
   GPIO_OUTPUT_SET(DHT_PIN, 0);
-  delay_ms(5);
+  delay_ms(1);
 
-  // High for 40us
-  // GPIO_OUTPUT_SET(2, 1);
-
+  // release.
   GPIO_DIS_OUTPUT(DHT_PIN);
   os_delay_us(40);
-
-  // Set pin to input with pullup
-  // PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
 
 #ifdef DEBUG_DHT
   os_printf("Waiting for gpio%d to drop \n", DHT_PIN);
@@ -131,51 +129,67 @@ static  void ICACHE_FLASH_ATTR pollDHTCb(void * arg){
   // wait for pin to drop?
   while (GPIO_INPUT_GET(DHT_PIN) == 1 && i < DHT_MAXCOUNT) {
     if (i >= DHT_MAXCOUNT) {
-      goto fail;
+	os_delay_us(1);
+	os_printf("Pin didn't drop\n");
+	goto fail;
     }
     i++;
+  }
+  os_delay_us(80);	// go to the middle of the expected high
+  if (GPIO_INPUT_GET(DHT_PIN) == 0) {
+	  os_printf("bad sensor, or noise\n");
+	  goto fail;
   }
 
 #ifdef DEBUG_DHT
   os_printf("Reading DHT\n");
 #endif
+/*
+ * Adapted from http://www.avrfreaks.net/forum/dht22-am2302-rht03-etc-sensor-avr-gcc-code
+ */
+        ets_intr_lock();
+  	for (uint8_t b = 0; b < 5; b++)		// 5 bytes
+	{
+		int inbyte = 0;
 
-  //ets_intr_lock();
-  // read data!
-  for (i = 0; i < MAXTIMINGS; i++) {
-    // Count high time (in approx us)
-    counter = 0;
-    while (GPIO_INPUT_GET(DHT_PIN) == laststate) {
-      counter++;
-      os_delay_us(1);
-      if (counter == 1000)
-        break;
-    }
-    laststate = GPIO_INPUT_GET(DHT_PIN);
+		for (uint8_t i = 0; i < 8; i++)	// 8 bits
+		{
+			int to_cnt = 0;
+			while(GPIO_INPUT_GET(DHT_PIN))
+			{
+				os_delay_us(2);
+				if (to_cnt++ > 25) {
+					/* This seems to happen on the first bit, frequently */
+					os_printf("to_cnt > 25 b=%d i=%d\n", b, i);
+					goto fail ;
+				}
+			}
+			os_delay_us(5);				// falling edge should be fast enough, but just to be safe
 
-    if (counter == 1000)
-      break;
-
-    // store data after 3 reads
-    if ((i > 3) && (i % 2 == 0)) {
-      // shove each bit into the storage bytes
-      data[bits_in / 8] <<= 1;
-      if (counter > BREAKTIME) {
-        //os_printf("1");
-        data[bits_in / 8] |= 1;
-      } else {
-        //os_printf("0");
-      }
-      bits_in++;
-    }
-  }
- // ets_intr_unlock();
-
-  if (bits_in < 40) {
-    os_printf("Got too few bits: %d should be at least 40", bits_in);
-    goto fail;
-  }
-  
+			to_cnt = 0;
+			while(!GPIO_INPUT_GET(DHT_PIN))
+			{
+				os_delay_us(2);
+				if (to_cnt++ > 28) {
+					os_printf("to_cnt > 28 b=%d i=%d\n", b, i);
+				       goto fail ;
+				}
+			}
+			// this is the problematic rising edge
+			// datasheet: duration defines bit: 26-28us for 0, 70 for 1, so read at 30 + (70-30)/2 = 50
+			if (b == 0 && i == 0)	// First bit is a little longer. 82us.
+				os_delay_us(10);
+			os_delay_us(50);
+			
+			inbyte <<= 1;
+			if(GPIO_INPUT_GET(DHT_PIN))
+				inbyte |= 1;
+		}
+		data[b] = inbyte;
+	}
+        ets_intr_unlock();
+	GPIO_DIS_OUTPUT(DHT_PIN);
+	PIN_PULLUP_DIS(PERIPHS_IO_MUX_GPIO4_U);
 
   int checksum = (data[0] + data[1] + data[2] + data[3]) & 0xFF;
   

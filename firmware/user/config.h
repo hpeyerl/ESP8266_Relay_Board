@@ -177,7 +177,7 @@ typedef struct {
 } SAVE_FLAG;
 
 void CFG_Save();
-void CFG_Load();
+void CFG_Load(int);
 
  
  

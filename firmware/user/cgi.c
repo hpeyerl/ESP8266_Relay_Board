@@ -278,11 +278,7 @@ int ICACHE_FLASH_ATTR cgiws2812b(HttpdConnData *connData)
 			ws2812b_set_pattern(0);
 	}
 
-	len=httpdFindArg(connData->post->buff, "save", buff, sizeof(buff));
-	if (len>0) {
-		gotcmd = 1;
-		ws2812b_save_pcfg();
-	}
+	ws2812b_save_pcfg();
 	
 	if(gotcmd==1) {
 		httpdRedirect(connData, "ws2812b.tpl");
@@ -307,7 +303,7 @@ void ICACHE_FLASH_ATTR tplws2812b(HttpdConnData *connData, char *token, void **a
 	if (token == NULL) return;
 
 	os_sprintf(buff, "Invalid");
-	
+
 	if (os_strcmp(token, "cur_delay") == 0) {
 		os_sprintf(buff, "%d", ws2812b_get_delay());
 	}
@@ -617,13 +613,13 @@ void ICACHE_FLASH_ATTR tplMQTT(HttpdConnData *connData, char *token, void **arg)
 		|| sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY
 		|| sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY
 		|| sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
-		if (os_strcmp(token, "mqtt-relay-subs-topic")==0) {
+		if (os_strcmp(token, "config_relaysubs")==0) {
 			os_sprintf(buff, "<tr><td>Relays subs topic:</td><td><input type=\"text\" name=\"mqtt-relay-subs-topic\" id=\"mqtt-relay-subs-topic\" value=\"%s\" </td></tr>", sysCfg.mqtt_relay_subs_topic);
 		}
 	}
 #if defined(CONFIG_WS2812B)
 	if (sysCfg.board_id==BOARD_ID_PHROB_WS2812B) {
-		if (os_strcmp(token, "mqtt-led-subs-topic")==0) {
+		if (os_strcmp(token, "config_ledsubs")==0) {
 			os_sprintf(buff, "<tr><td>LED subs topic:</td><td><input type=\"text\" name=\"mqtt-led-subs-topic\" id=\"mqtt-led-subs-topic\" value=\"%s\"</td></tr>", sysCfg.mqtt_led_subs_topic);
 		}
 	}
@@ -710,6 +706,11 @@ int ICACHE_FLASH_ATTR cgiMQTT(HttpdConnData *connData) {
 	len=httpdFindArg(connData->post->buff, "mqtt-relay-subs-topic", buff, sizeof(buff));
 	if (len>0) {
 		os_sprintf((char *)sysCfg.mqtt_relay_subs_topic,buff);
+	}
+
+	len=httpdFindArg(connData->post->buff, "mqtt-led-subs-topic", buff, sizeof(buff));
+	if (len>0) {
+		os_sprintf((char *)sysCfg.mqtt_led_subs_topic,buff);
 	}
 	
 	len=httpdFindArg(connData->post->buff, "mqtt-temphum-temp-pub-topic", buff, sizeof(buff));
@@ -1258,11 +1259,19 @@ int ICACHE_FLASH_ATTR tplsi7020(HttpdConnData *connData, char *token, void **arg
 
 	os_strcpy(buff, "Unknown");
 	if (os_strcmp(token, "temperature")==0) {
+#ifdef CONFIG_SI7020
 		datum = SI7020_GetTemperature();
+#else
+		datum = 0xffff;
+#endif
 		os_sprintf(buff, "%d", datum);
 	}
 	if (os_strcmp(token, "humidity")==0) {
+#ifdef CONFIG_SI7020
 		datum = SI7020_GetHumidity();
+#else
+		datum = 0xffff;
+#endif
 		os_sprintf(buff, "%d", datum);
 	}
 

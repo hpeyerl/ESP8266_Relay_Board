@@ -41,11 +41,12 @@ static bool initialized = 0;
  */
 struct PatternCfg pcfg;
 
+#define NUM_PATTERNS 6
 static ETSTimer PatternTimer;
 static struct Pattern {
 	int size;
 	uint8_t rgb[24][3];
-} patterns[6] = {
+} patterns[NUM_PATTERNS] = {
 	{
 		.size = 1,
 		.rgb = {
@@ -134,7 +135,7 @@ ws2812b_init(void)
 	CLEAR_PERI_REG_MASK(SPI_USER(SPI_DEV), SPI_FLASH_MODE);
 	initialized = 1;
 	os_timer_setfn(&PatternTimer, PatternTimerHandler, NULL);  // Setfn before set_delay() because it will turn on the timer
-	if (sysCfg.ws2812b_pattern) {
+	if (sysCfg.ws2812b_pattern && sysCfg.ws2812b_pattern < NUM_PATTERNS) {
 		ws2812b_set_stringlen(sysCfg.ws2812b_stringlen);
 		delay = sysCfg.ws2812b_delay;
 		ws2812b_set_brightness(sysCfg.ws2812b_brightness);
@@ -191,10 +192,26 @@ ws2812b_send_rgb(uint8_t r, uint8_t g, uint8_t b)
 }
 
 void ICACHE_FLASH_ATTR
+ws2812b_mqtt_pub_cb(uint32_t nrgb)
+{
+	int n, r, g, b;
+
+	ws2812b_set_delay(0);   // If sent an RGB value with count, then disable pattern timer.
+	n = (nrgb&0xff000000)>>24;
+	r = (nrgb&0x00ff0000)>>16;
+        g = (nrgb&0x0000ff00)>>8;
+        b = (nrgb&0x000000ff);
+	while(n--) {
+		ws2812b_send_rgb(r, g, b);
+	}
+}
+
+void ICACHE_FLASH_ATTR
 ws2812b_set_timer_delay()
 {
 	os_timer_disarm(&PatternTimer);
-	os_timer_arm(&PatternTimer, pcfg.ms_delay, 1);
+	if (pcfg.ms_delay)
+		os_timer_arm(&PatternTimer, pcfg.ms_delay, 1);
 }
 
 void
@@ -205,6 +222,11 @@ ws2812b_save_pcfg(void)
 	sysCfg.ws2812b_delay = ws2812b_get_delay();
 	sysCfg.ws2812b_brightness = ws2812b_get_brightness();
 	sysCfg.ws2812b_stringlen = ws2812b_get_stringlen();
+	os_printf("Saving: %d %d %d %d\n", 
+			ws2812b_get_pattern(),
+			ws2812b_get_delay(),
+			ws2812b_get_brightness(),
+			ws2812b_get_stringlen());
 	CFG_Save();
 }
 

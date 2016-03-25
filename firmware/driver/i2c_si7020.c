@@ -1,3 +1,4 @@
+#if defined(CONFIG_SI7020)
 #include "c_types.h"
 #include "ets_sys.h"
 #include "osapi.h"
@@ -164,3 +165,4 @@ SI7020_GetHumidity()
 		hum = 0xffff;
 	return hum;
 }
+#endif
