@@ -68,6 +68,7 @@ daySchedule weekSched[7]; // 7 days per week
 #define BOARD_ID_PHROB_SIGNAL_RELAY	8
 #define BOARD_ID_PHROB_WS2812B		9
 #define BOARD_ID_PHROB_DHT22		10
+#define BOARD_ID_PHROB_TSL2561		11
 /*
  */
 

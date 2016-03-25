@@ -30,6 +30,7 @@ BOARD_ID_PHROB_SINGLE_RELAY	7
 BOARD_ID_PHROB_SIGNAL_RELAY	8
 BOARD_ID_PHROB_WS2812B		9
 BOARD_ID_PHROB_DHT22		10
+BOARD_ID_PHROB_TSL2561		11
 </pre>
 <form name="configform" action="config.cgi" method="post">
 
