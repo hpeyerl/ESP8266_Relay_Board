@@ -323,6 +323,8 @@ void ICACHE_FLASH_ATTR mqttDataCb(uint32_t *args, const char* topic, uint32_t to
 	}	
 }
 
+#ifdef CONFIG_MQTT
+
 void ICACHE_FLASH_ATTR mqttPublishedCb(uint32_t *args)
 {
     MQTT_Client* client = (MQTT_Client*)args;
