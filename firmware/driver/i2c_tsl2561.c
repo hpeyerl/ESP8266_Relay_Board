@@ -5,7 +5,9 @@
 
 #include "i2c_master.h"
 #include "i2c_tsl2561.h"
+#include "taos_lux.h"
 
+#define CONFIG_CMD_TSL2561_DEBUG
 #ifdef CONFIG_CMD_TSL2561_DEBUG
 #define dbg(fmt, ...) LOG(LOG_DEBUG, fmt, ##__VA_ARGS__)
 #else
@@ -18,22 +20,57 @@ bool ICACHE_FLASH_ATTR
 TSL2561_Init()
 {
 #ifdef CONFIG_CMD_TSL2561_DEBUG
-	uint8_t datum;
-	uint16_t x;
-	uint8_t offset;
-	uint8_t len;
 #endif
-	os_printf("Initializing TSL2561..\n");
-	i2c_master_gpio_init(5, 2);	// hardcoded ickiness!
+	int addr;
+	int cmd;
+	uint16_t ch0, ch1;
 
-	os_printf("Failed to write to TSL2561 ... \r\n");
+	addr = 0x39;
+	os_printf("Initializing TSL2561..\n");
+	i2c_master_gpio_init(5, 4);	// hardcoded ickiness!
+
+	//
+	// Power up the device.  If we write a 0x3, then we can read
+	// back a 0x3 to confirm the device is working properly.
+	//
+	cmd = 0x0;
+	if (i2c_master_writeBytes1(cmd, 0x3) == false)	// POWER_UP
+	{
+		os_printf("Failed to write to TSL2561\n");
+		return false;
+	}
+
+	if (i2c_master_readByte() != 0x3)
+	{
+		os_printf("TSL2561 appears not to be there...\n");
+		return false;
+	}
+
+	os_delay_us(1000*400);	// zzzz for 400ms.
+	//
+	// Device has started a conversion.  Lets read it.
+	//
+	cmd = 0xac;
+	if (i2c_master_readUint16(addr, cmd, &ch0) == false) {
+		os_printf("Failed to read from ch0... \r\n");
+		return false;
+	}
+
+	cmd = 0xae;
+	if (i2c_master_readUint16(addr, cmd, &ch1) == false) {
+		os_printf("Failed to read from ch1... \r\n");
+		return false;
+	}
+
+	os_printf("Got %02x %02x\n", ch0, ch1);
+	IS_ALREADY_INITED = true;
+
 	return false;
 }
 
 uint16_t ICACHE_FLASH_ATTR
 TSL2561_GetLux()
 {
-	uint8_t datum[2];
 	int lux = 0;
 #if 0
 
