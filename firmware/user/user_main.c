@@ -220,7 +220,6 @@ void ICACHE_FLASH_ATTR mqttConnectedCb(uint32_t *args)
 
 void ICACHE_FLASH_ATTR mqttDisconnectedCb(uint32_t *args)
 {
-//	MQTT_Client* client = (MQTT_Client*)args;
 	os_printf("MQTT: Disconnected\r\n");
 }
 
@@ -333,6 +332,7 @@ void ICACHE_FLASH_ATTR mqttPublishedCb(uint32_t *args)
 
     if (sysCfg.mqtt_deep_sleep_time != 0)
 	if((QUEUE_IsEmpty(&client->msgQueue) || client->sendTimeout != 0) && go_to_sleep) {
+		MQTT_Disconnect(&mqttClient);
 		os_printf("Going to sleep for %d seconds ... zzzzzz\n", sysCfg.mqtt_deep_sleep_time);
 		system_deep_sleep(sysCfg.mqtt_deep_sleep_time * 1000 * 1000);
 	}
