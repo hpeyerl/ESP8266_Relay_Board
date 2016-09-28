@@ -45,6 +45,29 @@ void ICACHE_FLASH_ATTR ioGPIO(int ena, int gpio) {
 	}
 }
 
+int getRelaystate(int relay)
+{
+	int gpio=0;
+
+	os_printf("%s\n", __FUNCTION__);
+	switch(relay) {
+		case 1:
+	         gpio = relay1GPIO;
+		 break;
+		case 2:
+	         gpio = relay2GPIO;
+		 break;
+		case 3:
+	         gpio = relay3GPIO;
+		 break;
+		default:
+		 return 0;
+		 break;	// NOTREACHED
+	}
+	return GPIO_INPUT_GET(gpio);
+
+}
+
 static void ICACHE_FLASH_ATTR resetBtnTimerCb(void *arg) {
 	static int resetCnt=0;
 	if (!GPIO_INPUT_GET(BTNGPIO)) {

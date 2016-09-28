@@ -83,6 +83,8 @@ static void ICACHE_FLASH_ATTR broadcastReading(void *arg) {
 static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 
 	char topic[128];
+	int len;
+
 	if(sysCfg.mqtt_enable==1) {
 		
 		if (mqttClient.connState != MQTT_DATA) {
@@ -96,7 +98,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 
 			if(result->success) {
 				char temp[32];
-				int len;
 				
 				dht_temp_str(temp);
 				len = os_strlen(temp);
@@ -114,7 +115,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 #endif
 #ifdef CONFIG_SI7020
 			char buf[32];
-			int len;
 			os_sprintf(topic,"%s/%s",sysCfg.mqtt_devid, sysCfg.mqtt_temphum_temp_pub_topic);
 			len = os_sprintf(buf, "%d",SI7020_GetTemperature());
 			MQTT_Publish(&mqttClient,topic,buf,len,0,0);
@@ -130,7 +130,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 			struct sensor_reading* result = read_ds18b20();
 			if(result->success) {
 				char temp[32];
-				int len;
 				ds_str(temp,0);
 				len = os_strlen(temp);
 				os_sprintf(topic,"%s/%s",sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
@@ -141,7 +140,6 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 #endif
 #ifdef CONFIG_MAX31855
 			char buf[32];
-			int len;
 			os_sprintf(topic,"%s/%s",sysCfg.mqtt_devid, sysCfg.mqtt_temp_pub_topic);
 			len = os_sprintf(buf, "%d",max31855_read_ktemp());
 			MQTT_Publish(&mqttClient,topic,buf,len,0,0);
@@ -150,27 +148,34 @@ static ICACHE_FLASH_ATTR void MQTTbroadcastReading(void* arg){
 		}
 
 /*
- * Publish the state of each relay.  Need to create Relay GPIO accessors (getRelayNstate())
+ * Publish the state of each relay.
  * Also create an MQTT config publisher for these also.
  */
-#ifdef NOTYET
 	if (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY ||
 	    sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
-		os_sprintf(topic, "%s/%s/#", sysCfg.mqtt_devid, sysCfg.relay1name);
-		MQTT_Publish(&mqttClient, topic, getRelay1state(), len, 0 );
+		char state[4];
+		os_sprintf(topic, "%s/%s", sysCfg.mqtt_devid, sysCfg.relay1name);
+		os_sprintf(state, "%d", getRelaystate(1));
+		len = os_strlen(state);
+		MQTT_Publish(&mqttClient, topic, state, len, 0, 0 );
 	}
 	if (sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
 	    sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
-		os_sprintf(topic, "%s/%s/#", sysCfg.mqtt_devid, sysCfg.relay2name);
-		MQTT_Publish(&mqttClient, topic, getRelay2state(), len, 0 );
+		char state[4];
+		os_sprintf(topic, "%s/%s", sysCfg.mqtt_devid, sysCfg.relay2name);
+		os_sprintf(state, "%d", getRelaystate(2));
+		len = os_strlen(state);
+		MQTT_Publish(&mqttClient, topic, state, len, 0, 0 );
 	}
 	if (sysCfg.board_id == BOARD_ID_RELAY_BOARD) {
-		os_sprintf(topic, "%s/%s/#", sysCfg.mqtt_devid, sysCfg.relay3name);
-		MQTT_Publish(&mqttClient, topic, getRelay3state(), len, 0 );
+		char state[4];
+		os_sprintf(topic, "%s/%s", sysCfg.mqtt_devid, sysCfg.relay3name);
+		os_sprintf(state, "%d", getRelaystate(3));
+		len = os_strlen(state);
+		MQTT_Publish(&mqttClient, topic, state, len, 0, 0 );
 	}
-#endif // NOTYET
     }
 }
 
@@ -186,7 +191,12 @@ void ICACHE_FLASH_ATTR broadcastd_init(void){
 	if (sysCfg.mqtt_deep_sleep_time != 0)
 		timeout=1000;	// If we're coming out of deepsleep, then we want to broadcast right away.
 #ifdef CONFIG_MQTT
-	if(sysCfg.mqtt_enable==1 && (sysCfg.sensor_temp_enable || sysCfg.sensor_temphum_enable)) {
+	if(sysCfg.mqtt_enable==1 && (sysCfg.sensor_temp_enable || sysCfg.sensor_temphum_enable ||
+					sysCfg.board_id == BOARD_ID_PHROB_DUAL_RELAY ||
+					sysCfg.board_id == BOARD_ID_PHROB_SINGLE_RELAY ||
+					sysCfg.board_id == BOARD_ID_PHROB_SIGNAL_RELAY ||
+					sysCfg.board_id == BOARD_ID_RELAY_BOARD) 
+					) {
 		os_printf("Arming MQTT broadcast timer for %d seconds\n", timeout/1000);  	
 		os_timer_setfn(&MQTTbroadcastTimer, MQTTbroadcastReading, NULL);
 		os_timer_arm(&MQTTbroadcastTimer, timeout, 1);
